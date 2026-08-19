@@ -31,12 +31,15 @@ jobs:
       - name: Install dependencies
         run: |
           python3 -m pip install --upgrade pip
-          python3 -m pip install pygbag
+          pip install pygbag
 
       - name: Build WebAssembly package
         run: |
-          # 加上 --ume_block 0 與 echo 自動回覆，防止卡在終端機等待輸入
-          echo | python3 -m pygbag --build --template noctx.tmpl --ume_block 0 .
+          # 建立乾淨的輸出目錄並強制以批次模式輸出
+          python3 -m pygbag --build --archive --template noctx.tmpl .
+          
+          # 確保產生的檔案在 build/web 目錄
+          ls -la build/web
 
       - name: Upload Pages Artifact
         uses: actions/upload-pages-artifact@v3
