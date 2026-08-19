@@ -35,17 +35,32 @@ jobs:
 
       - name: Build WebAssembly package
         run: |
-          # 執行純打包模式 (不啟動本機伺服器)
-          python3 -m pygbag --build --archive --ume_block 0 --template noctx.tmpl .
-          
-          # 確保產出目錄並防 Jekyll 過濾
+          # 啟動 Pygbag 於背景執行打包
+          python3 -m pygbag --template noctx.tmpl . &
+          PYGBAG_PID=$!
+
+          # 循環等待直到 build/web 產生出 html 檔案
+          echo "等待 WebAssembly 打包完成..."
+          for i in {1..60}; do
+            if [ -d "build/web" ] && compgen -G "build/web/*.html" > /dev/null; then
+              echo "偵測到打包完成，等待檔案寫入完成..."
+              sleep 5
+              break
+            fi
+            sleep 2
+          done
+
+          # 強制關閉背景的 Pygbag 伺服器
+          kill -9 $PYGBAG_PID || true
+
+          # 進入產出目錄修正首頁檔名與防過濾設定
           cd build/web
           if [ ! -f "index.html" ]; then
             cp *.html index.html || true
           fi
           touch .nojekyll
-          
-          echo "最終打包檔案清單："
+
+          echo "最終打包成功檔案清單："
           ls -la
 
       - name: Upload Pages Artifact
