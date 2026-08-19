@@ -1,0 +1,410 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>元氣日語勇者傳 - 手機網頁版</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; touch-action: manipulation; }
+        body { background: #12141a; display: flex; justify-content: center; align-items: center; min-height: 100vh; overflow: hidden; font-family: "Microsoft JhengHei", sans-serif; }
+        canvas { background: #181c24; box-shadow: 0 0 20px rgba(0,0,0,0.8); max-width: 100vw; max-height: 100vh; object-fit: contain; }
+    </style>
+</head>
+<body>
+<canvas id="gameCanvas" width="1024" height="720"></canvas>
+
+<script>
+const canvas = document.getElementById("gameCanvas");
+const ctx = canvas.getContext("2d");
+
+const SCREEN_WIDTH = 1024;
+const SCREEN_HEIGHT = 720;
+const WORLD_WIDTH = 1152;
+const WORLD_HEIGHT = 810;
+
+// 數據庫
+const WEAPONS_DB = [
+    {name: "破舊短劍", atk: 5, type: "sword"}, {name: "木弓", atk: 7, type: "bow"},
+    {name: "破舊手槍", atk: 8, type: "gun"}, {name: "精鋼長劍", atk: 11, type: "sword"},
+    {name: "木法杖", atk: 13, type: "staff"}, {name: "左輪手槍", atk: 15, type: "gun"},
+    {name: "獵人長弓", atk: 17, type: "bow"}, {name: "武士刀", atk: 19, type: "sword"},
+    {name: "大蔥戰刃", atk: 21, type: "leek"}, {name: "神奇鹹魚", atk: 23, type: "fish"},
+    {name: "火焰法杖", atk: 25, type: "staff"}, {name: "疾風之弓", atk: 27, type: "bow"},
+    {name: "霰彈槍", atk: 29, type: "gun"}, {name: "騎士巨劍", atk: 32, type: "sword"},
+    {name: "寒冰法杖", atk: 34, type: "staff"}, {name: "衝鋒槍", atk: 36, type: "gun"},
+    {name: "精靈星弓", atk: 39, type: "bow"}, {name: "雷電法杖", atk: 42, type: "staff"},
+    {name: "光劍-紅", atk: 45, type: "light"}, {name: "賢者之杖", atk: 50, type: "staff"}
+];
+
+const MONSTER_TYPES = [
+    {name: "綠史萊姆", hp: 90, atk: 5, speed: 1.5, color: "#2ecc71"},
+    {name: "野怪哥布林", hp: 135, atk: 8, speed: 1.8, color: "#e67e22"},
+    {name: "骷髏弓箭手", hp: 120, atk: 10, speed: 2.0, color: "#ecf0f1"},
+    {name: "龍人近衛兵", hp: 540, atk: 30, speed: 2.0, color: "#c0392b"}
+];
+
+const ALL_VOCABULARY = [
+    {id: 1, jp: "わたし", romaji: "watashi", zh: "我"}, {id: 2, jp: "ねこ", romaji: "neko", zh: "貓"},
+    {id: 3, jp: "いぬ", romaji: "inu", zh: "狗"}, {id: 4, jp: "たべる", romaji: "taberu", zh: "吃"},
+    {id: 5, jp: "のむ", romaji: "nomu", zh: "喝"}, {id: 6, jp: "ほん", romaji: "hon", zh: "書"},
+    {id: 7, jp: "やま", romaji: "yama", zh: "山"}, {id: 8, jp: "かわ", romaji: "kawa", zh: "河川"},
+    {id: 9, jp: "くるま", romaji: "kuruma", zh: "車子"}, {id: 10, jp: "さくら", romaji: "sakura", zh: "櫻花"}
+];
+
+// 遊戲狀態與實體
+let state = "LOBBY";
+let player = {
+    x: SCREEN_WIDTH/2, y: SCREEN_HEIGHT/2, speed: 4.5, hp: 100, max_hp: 100,
+    shield: 50, max_shield: 50, gold: 500, level: 1, exp: 0,
+    weapon: "破舊短劍", weapons: ["破舊短劍"], job: "戰士", floor: 1
+};
+
+let bullets = [];
+let monsters = [];
+let chests = [];
+let healthPacks = [];
+let currentBoss = null;
+let wave = 1;
+let infoMsg = "使用左側搖桿移動，點擊右側按鈕互動！";
+
+// 虛擬控制設定
+const joystick = { x: 120, y: SCREEN_HEIGHT - 120, radius: 70, dirX: 0, dirY: 0, active: false, touchId: null };
+const btnAction = { x: SCREEN_WIDTH - 120, y: SCREEN_HEIGHT - 120, radius: 45, text: "互動", isPressed: false };
+const btnBack = { x: SCREEN_WIDTH - 160, y: 15, w: 140, h: 40, text: "⬅️ 返回" };
+
+// 輔助函式
+function getPlayerAttack() {
+    const w = WEAPONS_DB.find(item => item.name === player.weapon) || {atk: 5};
+    return 15 + w.atk;
+}
+
+function initDungeon() {
+    chests = [];
+    monsters = [];
+    bullets = [];
+    healthPacks = [];
+    currentBoss = null;
+    wave = 1;
+    player.x = WORLD_WIDTH / 2;
+    player.y = WORLD_HEIGHT / 2;
+
+    // 生成寶箱
+    for(let i=0; i<6; i++) {
+        chests.push({
+            x: 100 + (i%3)*400 + Math.random()*50,
+            y: 150 + Math.floor(i/3)*300 + Math.random()*50,
+            opened: false,
+            word: ALL_VOCABULARY[i % ALL_VOCABULARY.length]
+        });
+    }
+    spawnMonsters();
+    state = "DUNGEON";
+}
+
+function spawnMonsters() {
+    monsters = [];
+    for(let i=0; i<6; i++) {
+        monsters.push({
+            x: Math.random() * (WORLD_WIDTH - 160) + 80,
+            y: Math.random() * (WORLD_HEIGHT - 160) + 80,
+            hp: 90, max_hp: 90, speed: 1.5, atk: 5,
+            color: MONSTER_TYPES[0].color
+        });
+    }
+}
+
+// 觸控與事件監聽
+function getCanvasPos(e) {
+    const rect = canvas.getBoundingClientRect();
+    const scaleX = canvas.width / rect.width;
+    const scaleY = canvas.height / rect.height;
+    return {
+        x: (e.clientX - rect.left) * scaleX,
+        y: (e.clientY - rect.top) * scaleY
+    };
+}
+
+canvas.addEventListener("touchstart", handleTouchStart, {passive: false});
+canvas.addEventListener("touchmove", handleTouchMove, {passive: false});
+canvas.addEventListener("touchend", handleTouchEnd, {passive: false});
+canvas.addEventListener("mousedown", handleMouseDown);
+
+function handleTouchStart(e) {
+    e.preventDefault();
+    for(let i=0; i<e.changedTouches.length; i++) {
+        const touch = e.changedTouches[i];
+        const pos = getCanvasPos(touch);
+
+        // 搖桿判定
+        const distJoy = Math.hypot(pos.x - joystick.x, pos.y - joystick.y);
+        if (distJoy < joystick.radius * 1.5 && !joystick.active) {
+            joystick.active = true;
+            joystick.touchId = touch.identifier;
+            updateJoystick(pos);
+            continue;
+        }
+
+        // 互動按鈕
+        const distAction = Math.hypot(pos.x - btnAction.x, pos.y - btnAction.y);
+        if (distAction < btnAction.radius) {
+            handleActionClick();
+            continue;
+        }
+
+        // 返回按鈕
+        if (pos.x >= btnBack.x && pos.x <= btnBack.x + btnBack.w && pos.y >= btnBack.y && pos.y <= btnBack.y + btnBack.h) {
+            state = "LOBBY";
+            continue;
+        }
+
+        // 迷宮射擊
+        if (state === "DUNGEON") {
+            const camX = Math.max(0, Math.min(player.x - SCREEN_WIDTH / 2, WORLD_WIDTH - SCREEN_WIDTH));
+            const camY = Math.max(0, Math.min(player.y - SCREEN_HEIGHT / 2, WORLD_HEIGHT - SCREEN_HEIGHT));
+            shootBullet(pos.x + camX, pos.y + camY);
+        }
+    }
+}
+
+function handleTouchMove(e) {
+    e.preventDefault();
+    for(let i=0; i<e.changedTouches.length; i++) {
+        const touch = e.changedTouches[i];
+        if (joystick.active && touch.identifier === joystick.touchId) {
+            updateJoystick(getCanvasPos(touch));
+        }
+    }
+}
+
+function handleTouchEnd(e) {
+    e.preventDefault();
+    for(let i=0; i<e.changedTouches.length; i++) {
+        const touch = e.changedTouches[i];
+        if (touch.identifier === joystick.touchId) {
+            joystick.active = false;
+            joystick.touchId = null;
+            joystick.dirX = 0;
+            joystick.dirY = 0;
+        }
+    }
+}
+
+function handleMouseDown(e) {
+    const pos = getCanvasPos(e);
+    if (pos.x >= btnBack.x && pos.x <= btnBack.x + btnBack.w && pos.y >= btnBack.y && pos.y <= btnBack.y + btnBack.h) {
+        state = "LOBBY";
+        return;
+    }
+    const distAction = Math.hypot(pos.x - btnAction.x, pos.y - btnAction.y);
+    if (distAction < btnAction.radius) {
+        handleActionClick();
+        return;
+    }
+    if (state === "DUNGEON") {
+        const camX = Math.max(0, Math.min(player.x - SCREEN_WIDTH / 2, WORLD_WIDTH - SCREEN_WIDTH));
+        const camY = Math.max(0, Math.min(player.y - SCREEN_HEIGHT / 2, WORLD_HEIGHT - SCREEN_HEIGHT));
+        shootBullet(pos.x + camX, pos.y + camY);
+    }
+}
+
+function updateJoystick(pos) {
+    const dx = pos.x - joystick.x;
+    const dy = pos.y - joystick.y;
+    const dist = Math.hypot(dx, dy);
+    const angle = Math.atan2(dy, dx);
+    const cappedDist = Math.min(dist, joystick.radius);
+    joystick.dirX = Math.cos(angle) * (cappedDist / joystick.radius);
+    joystick.dirY = Math.sin(angle) * (cappedDist / joystick.radius);
+}
+
+function shootBullet(tx, ty) {
+    const angle = Math.atan2(ty - player.y, tx - player.x);
+    bullets.push({
+        x: player.x, y: player.y,
+        vx: Math.cos(angle) * 12,
+        vy: Math.sin(angle) * 12,
+        damage: getPlayerAttack()
+    });
+}
+
+function handleActionClick() {
+    if (state === "LOBBY") {
+        // 靠近傳送門
+        if (Math.hypot(player.x - 510, player.y - 110) < 80) {
+            initDungeon();
+        }
+    }
+}
+
+// 遊戲主循環
+function update() {
+    // 玩家移動
+    player.x += joystick.dirX * player.speed;
+    player.y += joystick.dirY * player.speed;
+
+    const boundW = (state === "DUNGEON") ? WORLD_WIDTH : SCREEN_WIDTH;
+    const boundH = (state === "DUNGEON") ? WORLD_HEIGHT : SCREEN_HEIGHT;
+    player.x = Math.max(20, Math.min(boundW - 20, player.x));
+    player.y = Math.max(20, Math.min(boundH - 20, player.y));
+
+    if (state === "DUNGEON") {
+        // 子彈更新
+        for(let i = bullets.length - 1; i >= 0; i--) {
+            let b = bullets[i];
+            b.x += b.vx; b.y += b.vy;
+            if (b.x < 0 || b.x > WORLD_WIDTH || b.y < 0 || b.y > WORLD_HEIGHT) {
+                bullets.splice(i, 1);
+                continue;
+            }
+            // 擊中怪物
+            for(let j = monsters.length - 1; j >= 0; j--) {
+                let m = monsters[j];
+                if (Math.hypot(b.x - m.x, b.y - m.y) < 25) {
+                    m.hp -= b.damage;
+                    bullets.splice(i, 1);
+                    if (m.hp <= 0) {
+                        monsters.splice(j, 1);
+                        player.gold += 30;
+                    }
+                    break;
+                }
+            }
+        }
+
+        // 怪物移動與攻擊
+        monsters.forEach(m => {
+            const angle = Math.atan2(player.y - m.y, player.x - m.x);
+            m.x += Math.cos(angle) * m.speed;
+            m.y += Math.sin(angle) * m.speed;
+            if (Math.hypot(player.x - m.x, player.y - m.y) < 30) {
+                if (player.shield > 0) player.shield -= 0.3;
+                else player.hp -= 0.3;
+            }
+        });
+
+        if (player.hp <= 0) {
+            player.hp = player.max_hp;
+            state = "LOBBY";
+            infoMsg = "💀 你在迷宮中戰敗！已返回大廳。";
+        }
+    }
+}
+
+function draw() {
+    ctx.clearRect(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT);
+
+    let camX = 0, camY = 0;
+    if (state === "DUNGEON") {
+        camX = Math.max(0, Math.min(player.x - SCREEN_WIDTH / 2, WORLD_WIDTH - SCREEN_WIDTH));
+        camY = Math.max(0, Math.min(player.y - SCREEN_HEIGHT / 2, WORLD_HEIGHT - SCREEN_HEIGHT));
+    }
+
+    if (state === "LOBBY") {
+        ctx.fillStyle = "#2d201c";
+        ctx.fillRect(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT);
+
+        // 傳送門
+        ctx.fillStyle = "#50555f";
+        ctx.fillRect(460, 70, 100, 80);
+        ctx.strokeStyle = "#ffcc00";
+        ctx.lineWidth = 3;
+        ctx.strokeRect(460, 70, 100, 80);
+        ctx.fillStyle = "#ffcc00";
+        ctx.font = "16px sans-serif";
+        ctx.fillText("【迷宮傳送門】", 460, 175);
+
+        // 玩家
+        ctx.fillStyle = "#e74c3c";
+        ctx.fillRect(player.x - 18, player.y - 18, 36, 36);
+
+        // 靠近提示
+        if (Math.hypot(player.x - 510, player.y - 110) < 80) {
+            ctx.fillStyle = "#ffcc00";
+            ctx.fillText("點擊右下角【互動】進入迷宮", player.x - 80, player.y - 30);
+        }
+
+        ctx.fillStyle = "#ffffff";
+        ctx.font = "20px sans-serif";
+        ctx.fillText(`勇者 Lv.${player.level} | 💰 ${player.gold} | 裝備: ${player.weapon}`, 30, 40);
+        ctx.fillStyle = "#ffcc00";
+        ctx.fillText(infoMsg, 30, SCREEN_HEIGHT - 30);
+
+    } else if (state === "DUNGEON") {
+        ctx.fillStyle = "#20242e";
+        ctx.fillRect(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT);
+
+        // 寶箱
+        chests.forEach(c => {
+            ctx.fillStyle = "#8b5a2b";
+            ctx.fillRect(c.x - camX, c.y - camY, 34, 34);
+            ctx.fillStyle = "#ffffff";
+            ctx.font = "14px sans-serif";
+            ctx.fillText(c.word.jp, c.x - camX - 5, c.y - camY - 5);
+        });
+
+        // 怪物
+        monsters.forEach(m => {
+            ctx.fillStyle = m.color;
+            ctx.fillRect(m.x - camX - 18, m.y - camY - 18, 36, 36);
+            ctx.fillStyle = "#2ecc71";
+            ctx.fillRect(m.x - camX - 18, m.y - camY - 26, (m.hp/m.max_hp)*36, 5);
+        });
+
+        // 子彈
+        ctx.fillStyle = "#ffcc00";
+        bullets.forEach(b => {
+            ctx.beginPath();
+            ctx.arc(b.x - camX, b.y - camY, 5, 0, Math.PI*2);
+            ctx.fill();
+        });
+
+        // 玩家
+        ctx.fillStyle = "#3498db";
+        ctx.fillRect(player.x - camX - 18, player.y - camY - 18, 36, 36);
+
+        // HUD
+        ctx.fillStyle = "#0f1218";
+        ctx.fillRect(0, 0, SCREEN_WIDTH, 50);
+        ctx.fillStyle = "#ffffff";
+        ctx.font = "18px sans-serif";
+        ctx.fillText(`HP: ${Math.floor(player.hp)}/${player.max_hp} | 護盾: ${Math.floor(player.shield)} | 💰 ${player.gold}`, 20, 32);
+
+        // 返回按鈕
+        ctx.fillStyle = "#e74c3c";
+        ctx.fillRect(btnBack.x, btnBack.y, btnBack.w, btnBack.h);
+        ctx.fillStyle = "#ffffff";
+        ctx.fillText(btnBack.text, btnBack.x + 20, btnBack.y + 26);
+    }
+
+    // 繪製虛擬控制器
+    ctx.strokeStyle = "rgba(255, 255, 255, 0.4)";
+    ctx.lineWidth = 3;
+    ctx.beginPath();
+    ctx.arc(joystick.x, joystick.y, joystick.radius, 0, Math.PI*2);
+    ctx.stroke();
+
+    ctx.fillStyle = "rgba(255, 255, 255, 0.7)";
+    ctx.beginPath();
+    ctx.arc(joystick.x + joystick.dirX * joystick.radius, joystick.y + joystick.dirY * joystick.radius, 25, 0, Math.PI*2);
+    ctx.fill();
+
+    // 互動按鈕
+    ctx.fillStyle = "#ffcc00";
+    ctx.beginPath();
+    ctx.arc(btnAction.x, btnAction.y, btnAction.radius, 0, Math.PI*2);
+    ctx.fill();
+    ctx.fillStyle = "#12141a";
+    ctx.font = "bold 18px sans-serif";
+    ctx.fillText(btnAction.text, btnAction.x - 18, btnAction.y + 6);
+}
+
+function gameLoop() {
+    update();
+    draw();
+    requestAnimationFrame(gameLoop);
+}
+
+gameLoop();
+</script>
+</body>
+</html>
