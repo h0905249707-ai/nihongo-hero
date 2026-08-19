@@ -14,7 +14,7 @@ permissions:
 
 concurrency:
   group: "pages"
-  cancel-in-progress: false
+  cancel-in-progress: true
 
 jobs:
   build:
@@ -35,8 +35,8 @@ jobs:
 
       - name: Build WebAssembly package
         run: |
-          # 傳入 . 代表當前專案根目錄
-          python3 -m pygbag --build --template noctx.tmpl .
+          # 加上 --ume_block 0 與 echo 自動回覆，防止卡在終端機等待輸入
+          echo | python3 -m pygbag --build --template noctx.tmpl --ume_block 0 .
 
       - name: Upload Pages Artifact
         uses: actions/upload-pages-artifact@v3
