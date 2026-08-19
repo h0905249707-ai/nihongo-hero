@@ -35,17 +35,22 @@ jobs:
 
       - name: Build WebAssembly package
         run: |
-          # 使用 timeout 限制 15 秒，打包完成後自動結束常駐 server
+          # 限制 15 秒完成編譯
           timeout 15s python3 -m pygbag --build --template noctx.tmpl . || true
           
-          # 檢查並確保產出目錄存在
-          if [ -d "build/web" ]; then
-            echo "打包成功！檔案清單："
-            ls -la build/web
-          else
-            echo "找不到 build/web 目錄"
-            exit 1
+          # 進入產出目錄修正首頁檔名
+          cd build/web
+          
+          # 確保有 index.html (若產出為其他名稱則自動建立 index.html)
+          if [ ! -f "index.html" ]; then
+            cp *.html index.html || true
           fi
+          
+          # 建立 .nojekyll 防止 GitHub 忽略底層 WASM 靜態資源
+          touch .nojekyll
+          
+          echo "修正後目錄檔案清單："
+          ls -la
 
       - name: Upload Pages Artifact
         uses: actions/upload-pages-artifact@v3
