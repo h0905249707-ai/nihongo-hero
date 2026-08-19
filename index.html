@@ -6,27 +6,12 @@
     <title>元氣日語勇者傳 - 終極像素戰鬥手機版</title>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; touch-action: none; user-select: none; -webkit-user-select: none; }
-        body { background: #000; display: flex; justify-content: center; align-items: center; width: 100vw; height: 100vh; overflow: hidden; font-family: "PingFang TC", "Microsoft JhengHei", sans-serif; }
-        #canvas-container { position: relative; width: 100vw; height: 100vh; display: flex; justify-content: center; align-items: center; }
-        canvas { background: #12141a; aspect-ratio: 1024 / 720; width: 100%; height: 100%; object-fit: contain; }
-        
-        #rotate-notice {
-            display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
-            background: #12141a; color: #ffcc00; z-index: 9999;
-            flex-direction: column; justify-content: center; align-items: center; text-align: center;
-            font-size: 20px; font-weight: bold;
-        }
-        @media screen and (orientation: portrait) {
-            #rotate-notice { display: flex; }
-        }
+        html, body { width: 100vw; height: 100vh; background: #000; overflow: hidden; font-family: "PingFang TC", "Microsoft JhengHei", sans-serif; }
+        #canvas-container { position: absolute; top: 0; left: 0; width: 100vw; height: 100vh; display: flex; justify-content: center; align-items: center; }
+        canvas { background: #12141a; width: 100%; height: 100%; object-fit: contain; aspect-ratio: 1024 / 720; }
     </style>
 </head>
 <body>
-
-<div id="rotate-notice">
-    <div style="font-size: 54px; margin-bottom: 20px;">📱 🔄</div>
-    請將手機橫向旋轉遊玩
-</div>
 
 <div id="canvas-container">
     <canvas id="gameCanvas" width="1024" height="720"></canvas>
@@ -58,7 +43,7 @@ const COLOR_GRAY      = "#646e7d";
 const COLOR_ORANGE    = "#e67e22";
 
 // ==========================================
-// 2. 完整梯度平衡數據庫 (20武器、20食物、20寵物、20怪物、30單字)
+// 2. 完整數據庫
 // ==========================================
 const WEAPONS_DB = [
     {name: "破舊短劍", atk: 5, weight: 50, type: "sword"},
@@ -154,14 +139,14 @@ const ALL_VOCABULARY = [
     {id: 17, jp: "あめ", romaji: "ame", zh: "雨水"}, {id: 18, jp: "ゆき", romaji: "yuki", zh: "白雪"},
     {id: 19, jp: "かぜ", romaji: "kaze", zh: "微風"}, {id: 20, jp: "つき", romaji: "tsuki", zh: "月亮"},
     {id: 21, jp: "ともだち", romaji: "tomodachi", zh: "朋友"}, {id: 22, jp: "せんせい", romaji: "sensei", zh: "老師"},
-    {id: 23, jp: " gakusei", romaji: "gakusei", zh: "學生"}, {id: 24, jp: "がっこう", romaji: "gakkou", zh: "學校"},
+    {id: 23, jp: "がくせい", romaji: "gakusei", zh: "學生"}, {id: 24, jp: "がっこう", romaji: "gakkou", zh: "學校"},
     {id: 25, jp: "いえ", romaji: "ie", zh: "家"}, {id: 26, jp: "でんしゃ", romaji: "densha", zh: "電車"},
     {id: 27, jp: "えき", romaji: "eki", zh: "車站"}, {id: 28, jp: "さかな", romaji: "sakana", zh: "魚"},
     {id: 29, jp: "にく", romaji: "niku", zh: "肉"}, {id: 30, jp: "やさい", romaji: "yasai", zh: "蔬菜"}
 ];
 
 // ==========================================
-// 3. 像素繪圖
+// 3. 像素視覺繪製模組
 // ==========================================
 function drawPixelHero(ctx, x, y, job) {
     ctx.save();
@@ -231,7 +216,7 @@ function drawPixelMonster(ctx, x, y, idx, isBoss=false) {
 function drawPixelFood(ctx, x, y, name) {
     ctx.save();
     ctx.translate(x, y);
-    const idx = FOODS_DB.findIndex(f => f.name === name);
+    const idx = Math.max(0, FOODS_DB.findIndex(f => f.name === name));
     if (idx === 0) {
         ctx.fillStyle = COLOR_RED; ctx.beginPath(); ctx.arc(14, 16, 10, 0, Math.PI*2); ctx.fill();
         ctx.fillStyle = "rgb(100, 50, 20)"; ctx.fillRect(13, 2, 3, 6);
@@ -388,7 +373,7 @@ function drawPixelLobbyBuilding(ctx, bType, rect) {
 }
 
 // ==========================================
-// 4. 遊戲物件實體定義
+// 4. 遊戲物件實體與狀態
 // ==========================================
 class Player {
     constructor() {
@@ -502,20 +487,21 @@ const rectPetHouse = {x: 800, y: 480, w: 120, h: 100, type: "pethouse", label: "
 const rectVocab    = {x: 100, y: 90,  w: 100, h: 100, type: "vocab",    label: "【 魔法單字庫 】", color: COLOR_BLUE};
 const rectChest    = {x: 100, y: 480, w: 100, h: 100, type: "chest",    label: "【 裝備軍火箱 】", color: COLOR_GREEN};
 
-// 頂部三大操作按鈕 (與原版完全一致)
+// 頂部功能按鈕
 const btnSave = { x: 20,  y: 20, w: 110, h: 36, text: "💾 存檔", color: COLOR_GREEN };
 const btnLoad = { x: 140, y: 20, w: 110, h: 36, text: "📂 讀檔", color: COLOR_PURPLE };
 const btnJob  = { x: 260, y: 20, w: 120, h: 36, text: "🔄 換職業", color: COLOR_BLUE };
+const btnFullscreen = { x: SCREEN_WIDTH - 150, y: 20, w: 130, h: 36, text: "⛶ 全螢幕", color: COLOR_GOLD };
 
 // 虛擬控制器
 const joyMove = { x: 120, y: SCREEN_HEIGHT - 120, radius: 75, stickX: 120, stickY: 120, dirX: 0, dirY: 0, touchId: null };
 const joyShoot = { x: SCREEN_WIDTH - 120, y: SCREEN_HEIGHT - 120, radius: 75, stickX: SCREEN_WIDTH - 120, stickY: SCREEN_HEIGHT - 120, dirX: 0, dirY: 0, isAiming: false, touchId: null };
-const btnE = { x: SCREEN_WIDTH - 60, y: SCREEN_HEIGHT - 230, radius: 36, text: "E", label: "互動", justPressed: false, touchId: null };
-const btnSpace = { x: SCREEN_WIDTH - 150, y: SCREEN_HEIGHT - 230, radius: 36, text: "SPACE", label: "出戰", justPressed: false, touchId: null };
+const btnE = { x: SCREEN_WIDTH - 60, y: SCREEN_HEIGHT - 220, radius: 36, text: "E", label: "互動", justPressed: false, touchId: null };
+const btnSpace = { x: SCREEN_WIDTH - 150, y: SCREEN_HEIGHT - 220, radius: 36, text: "SPACE", label: "出戰", justPressed: false, touchId: null };
 const btnBack = { x: 850, y: 15, w: 150, h: 40, text: "⬅️ 放棄返回" };
 
 // ==========================================
-// 5. 存檔與讀檔系統 (LocalStorage 完整還原)
+// 5. 存檔與讀檔系統 (LocalStorage)
 // ==========================================
 function saveGame() {
     const data = {
@@ -566,7 +552,7 @@ function loadGame() {
 }
 
 // ==========================================
-// 6. 觸控與事件系統 (修復無反應與全螢幕阻斷)
+// 6. 觸控與事件系統
 // ==========================================
 function getCanvasPos(e) {
     const rect = canvas.getBoundingClientRect();
@@ -575,17 +561,26 @@ function getCanvasPos(e) {
     return { x: (e.clientX - rect.left) * scaleX, y: (e.clientY - rect.top) * scaleY };
 }
 
-function tryFullscreen() {
-    const docEl = document.documentElement;
-    if (docEl.requestFullscreen) docEl.requestFullscreen().catch(()=>{});
-    else if (docEl.webkitRequestFullscreen) docEl.webkitRequestFullscreen().catch(()=>{});
+function triggerFullscreen() {
+    const el = document.documentElement;
+    if (el.requestFullscreen) {
+        el.requestFullscreen().catch(() => {});
+    } else if (el.webkitRequestFullscreen) {
+        el.webkitRequestFullscreen().catch(() => {});
+    }
     if (screen.orientation && screen.orientation.lock) {
-        screen.orientation.lock("landscape").catch(()=>{});
+        screen.orientation.lock("landscape").catch(() => {});
     }
 }
 
 function processPointer(pos, identifier, isDown) {
     if (isDown) {
+        // 全螢幕按鈕
+        if (pos.x >= btnFullscreen.x && pos.x <= btnFullscreen.x + btnFullscreen.w && pos.y >= btnFullscreen.y && pos.y <= btnFullscreen.y + btnFullscreen.h) {
+            triggerFullscreen();
+            return;
+        }
+
         // 大廳三大按鈕
         if (state === "LOBBY") {
             if (pos.x >= btnSave.x && pos.x <= btnSave.x + btnSave.w && pos.y >= btnSave.y && pos.y <= btnSave.y + btnSave.h) { saveGame(); return; }
@@ -607,13 +602,13 @@ function processPointer(pos, identifier, isDown) {
             }
         }
 
-        // E 按鈕
+        // E 按鈕 (僅觸發互動)
         if (Math.hypot(pos.x - btnE.x, pos.y - btnE.y) < btnE.radius) {
             btnE.justPressed = true;
             return;
         }
 
-        // SPACE 按鈕
+        // SPACE 按鈕 (出戰/切換)
         if (Math.hypot(pos.x - btnSpace.x, pos.y - btnSpace.y) < btnSpace.radius) {
             btnSpace.justPressed = true;
             return;
@@ -662,7 +657,7 @@ function processPointer(pos, identifier, isDown) {
             return;
         }
 
-        // 商店點擊
+        // 商店購買
         if (state === "SHOP") {
             FOODS_DB.forEach((f, i) => {
                 const bx = 30 + (i % 5) * 190, by = 105 + Math.floor(i / 5) * 45;
@@ -701,12 +696,10 @@ function processPointer(pos, identifier, isDown) {
     }
 }
 
-// 綁定指標事件 (支援滑鼠與多點觸控)
 canvas.addEventListener("pointerdown", (e) => {
-    tryFullscreen();
     const pos = getCanvasPos(e);
 
-    // 左側移動輪盤
+    // 左側移動搖桿
     const dMove = Math.hypot(pos.x - joyMove.x, pos.y - joyMove.y);
     if (dMove < joyMove.radius * 1.8 && joyMove.touchId === null) {
         joyMove.touchId = e.pointerId;
@@ -718,7 +711,7 @@ canvas.addEventListener("pointerdown", (e) => {
         joyMove.dirY = Math.sin(angle) * (dist / joyMove.radius);
     }
 
-    // 右側射擊輪盤
+    // 右側拉動式射擊搖桿 (地牢迷宮限定)
     const dShoot = Math.hypot(pos.x - joyShoot.x, pos.y - joyShoot.y);
     if (dShoot < joyShoot.radius * 1.8 && joyShoot.touchId === null && state === "DUNGEON") {
         joyShoot.touchId = e.pointerId;
@@ -844,6 +837,7 @@ function update() {
     if (state === "LOBBY") {
         if (pet) pet.follow(player.x, player.y);
 
+        // SPACE 鍵：切換職業
         if (btnSpace.justPressed) {
             btnSpace.justPressed = false;
             const jobs = ["戰士", "法師", "弓箭手"];
@@ -852,6 +846,7 @@ function update() {
             infoMsg = `職業切換為【${player.job}】！`;
         }
 
+        // E 鍵：進入設施 (修復換職業錯亂問題)
         if (btnE.justPressed) {
             btnE.justPressed = false;
             if (Math.hypot(player.x - (rectDoor.x + 50), player.y - (rectDoor.y + 40)) < 75) prepareStage();
@@ -905,7 +900,7 @@ function update() {
             }
         }
 
-        // 拉動式右側射擊搖桿
+        // 拉動式右側射擊搖桿 (按住拉動連續射擊)
         if (joyShoot.isAiming) {
             shootCooldownTimer++;
             if (shootCooldownTimer >= 10) {
@@ -920,7 +915,7 @@ function update() {
             shootCooldownTimer = 10;
         }
 
-        // 子彈碰撞
+        // 子彈碰撞判定
         for (let i = bullets.length - 1; i >= 0; i--) {
             const b = bullets[i];
             b.x += b.vx; b.y += b.vy;
@@ -963,7 +958,7 @@ function update() {
             }
         }
 
-        // 拾取武器與回血包
+        // 拾取物品
         for (let i = groundWeapons.length - 1; i >= 0; i--) {
             if (Math.hypot(player.x - groundWeapons[i].x, player.y - groundWeapons[i].y) < 30) {
                 if (!player.weapons.includes(groundWeapons[i].name)) {
@@ -1042,7 +1037,7 @@ function update() {
 }
 
 // ==========================================
-// 9. 完整繪圖渲染
+// 9. 渲染模組
 // ==========================================
 function draw() {
     ctx.clearRect(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT);
@@ -1071,7 +1066,7 @@ function draw() {
         const pet = pets[activePetIdx];
         if (pet) drawPixelPet(ctx, pet.x, pet.y, pet.name, pet.stage);
 
-        // 靠近設施懸浮提示 (完全復刻原版)
+        // 懸浮提示
         let promptTxt = null;
         if (Math.hypot(player.x - (rectDoor.x + 50), player.y - (rectDoor.y + 40)) < 75) promptTxt = "按 [E] 進入迷宮";
         else if (Math.hypot(player.x - (rectShop.x + 60), player.y - (rectShop.y + 45)) < 80) promptTxt = "按 [E] 進入商店";
@@ -1086,11 +1081,12 @@ function draw() {
             ctx.fillText(promptTxt, player.x - 60, player.y - 25);
         }
 
-        // 大廳三大功能按鈕 (存檔/讀檔/換職業)
-        [btnSave, btnLoad, btnJob].forEach(b => {
+        // 大廳功能按鈕 (存檔/讀檔/換職業/全螢幕)
+        [btnSave, btnLoad, btnJob, btnFullscreen].forEach(b => {
             ctx.fillStyle = b.color; ctx.roundRect(b.x, b.y, b.w, b.h, 6); ctx.fill();
             ctx.strokeStyle = COLOR_WHITE; ctx.lineWidth = 1; ctx.stroke();
-            ctx.fillStyle = COLOR_WHITE; ctx.font = "bold 16px sans-serif";
+            ctx.fillStyle = (b === btnFullscreen) ? COLOR_BG_DARK : COLOR_WHITE;
+            ctx.font = "bold 16px sans-serif";
             ctx.fillText(b.text, b.x + 16, b.y + 24);
         });
 
@@ -1156,7 +1152,6 @@ function draw() {
             ctx.fillText(Math.ceil(countdownTimer / 60), SCREEN_WIDTH / 2 - 20, SCREEN_HEIGHT / 2);
         }
 
-        // 放棄返回
         ctx.fillStyle = COLOR_RED; ctx.roundRect(btnBack.x, btnBack.y, btnBack.w, btnBack.h, 6); ctx.fill();
         ctx.fillStyle = COLOR_WHITE; ctx.font = "bold 18px sans-serif"; ctx.fillText(btnBack.text, btnBack.x + 25, btnBack.y + 26);
 
