@@ -35,21 +35,17 @@ jobs:
 
       - name: Build WebAssembly package
         run: |
-          # 限制 15 秒完成編譯
-          timeout 15s python3 -m pygbag --build --template noctx.tmpl . || true
+          # 執行純打包模式 (不啟動本機伺服器)
+          python3 -m pygbag --build --archive --ume_block 0 --template noctx.tmpl .
           
-          # 進入產出目錄修正首頁檔名
+          # 確保產出目錄並防 Jekyll 過濾
           cd build/web
-          
-          # 確保有 index.html (若產出為其他名稱則自動建立 index.html)
           if [ ! -f "index.html" ]; then
             cp *.html index.html || true
           fi
-          
-          # 建立 .nojekyll 防止 GitHub 忽略底層 WASM 靜態資源
           touch .nojekyll
           
-          echo "修正後目錄檔案清單："
+          echo "最終打包檔案清單："
           ls -la
 
       - name: Upload Pages Artifact
