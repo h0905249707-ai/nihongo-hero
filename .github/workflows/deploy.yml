@@ -35,7 +35,8 @@ jobs:
 
       - name: Build WebAssembly package
         run: |
-          python3 -m pygbag --build --template noctx.tmpl main.py
+          # 傳入 . 代表當前專案根目錄
+          python3 -m pygbag --build --template noctx.tmpl .
 
       - name: Upload Pages Artifact
         uses: actions/upload-pages-artifact@v3
