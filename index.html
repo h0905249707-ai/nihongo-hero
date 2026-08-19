@@ -6,9 +6,9 @@
     <title>元氣日語勇者傳 - 終極像素戰鬥手機版</title>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; touch-action: none; user-select: none; -webkit-user-select: none; }
-        html, body { width: 100vw; height: 100vh; background: #000; overflow: hidden; font-family: "PingFang TC", "Microsoft JhengHei", sans-serif; }
-        #canvas-container { position: absolute; top: 0; left: 0; width: 100vw; height: 100vh; display: flex; justify-content: center; align-items: center; }
-        canvas { background: #12141a; width: 100%; height: 100%; object-fit: contain; aspect-ratio: 1024 / 720; }
+        html, body { width: 100%; height: 100%; background: #000; overflow: hidden; font-family: "PingFang TC", "Microsoft JhengHei", sans-serif; display: flex; justify-content: center; align-items: center; }
+        #canvas-container { position: relative; width: 100vw; height: 100vh; display: flex; justify-content: center; align-items: center; }
+        canvas { display: block; background: #12141a; max-width: 100vw; max-height: 100vh; width: 100%; height: auto; aspect-ratio: 1024 / 720; }
     </style>
 </head>
 <body>
@@ -21,14 +21,32 @@
 const canvas = document.getElementById("gameCanvas");
 const ctx = canvas.getContext("2d");
 
+// ==========================================
+// 0. Canvas 跨平台安全 Polyfill (修復崩潰主因)
+// ==========================================
+if (!CanvasRenderingContext2D.prototype.roundRect) {
+    CanvasRenderingContext2D.prototype.roundRect = function (x, y, w, h, radii) {
+        let r = typeof radii === 'number' ? radii : (Array.isArray(radii) ? radii[0] : 0);
+        if (w < 2 * r) r = w / 2;
+        if (h < 2 * r) r = h / 2;
+        if (r < 0) r = 0;
+        this.beginPath();
+        this.moveTo(x + r, y);
+        this.arcTo(x + w, y, x + w, y + h, r);
+        this.arcTo(x + w, y + h, x, y + h, r);
+        this.arcTo(x, y + h, x, y, r);
+        this.arcTo(x, y, x + w, y, r);
+        this.closePath();
+        return this;
+    };
+}
+
 const SCREEN_WIDTH = 1024;
 const SCREEN_HEIGHT = 720;
 const WORLD_WIDTH = 1152;
 const WORLD_HEIGHT = 810;
 
-// ==========================================
-// 1. 色彩定義
-// ==========================================
+// 色彩定義
 const COLOR_BG_DARK   = "#12141a";
 const COLOR_DUNGEON_1 = "#20242e";
 const COLOR_DUNGEON_2 = "#181c24";
@@ -43,7 +61,7 @@ const COLOR_GRAY      = "#646e7d";
 const COLOR_ORANGE    = "#e67e22";
 
 // ==========================================
-// 2. 完整數據庫
+// 1. 梯度平衡數據庫 (20武器、20食物、20寵物、20怪物、30單字)
 // ==========================================
 const WEAPONS_DB = [
     {name: "破舊短劍", atk: 5, weight: 50, type: "sword"},
@@ -146,7 +164,7 @@ const ALL_VOCABULARY = [
 ];
 
 // ==========================================
-// 3. 像素視覺繪製模組
+// 2. 像素視覺繪製模組
 // ==========================================
 function drawPixelHero(ctx, x, y, job) {
     ctx.save();
@@ -373,7 +391,7 @@ function drawPixelLobbyBuilding(ctx, bType, rect) {
 }
 
 // ==========================================
-// 4. 遊戲物件實體與狀態
+// 3. 遊戲角色與物件實體
 // ==========================================
 class Player {
     constructor() {
@@ -480,14 +498,13 @@ let infoMsg = "歡迎來到大廳！靠近設施按 [E] 鍵互動。";
 let countdownTimer = 0;
 let shootCooldownTimer = 0;
 
-// 建築座標與碰撞區
+// 建築物與按鈕配置
 const rectDoor     = {x: 460, y: 70,  w: 100, h: 80,  type: "door",     label: "【 迷宮傳送門 】", color: COLOR_GOLD};
 const rectShop     = {x: 800, y: 90,  w: 120, h: 90,  type: "shop",     label: "【 補給商店 】", color: COLOR_RED};
 const rectPetHouse = {x: 800, y: 480, w: 120, h: 100, type: "pethouse", label: "【 寵物小屋 】", color: COLOR_PURPLE};
 const rectVocab    = {x: 100, y: 90,  w: 100, h: 100, type: "vocab",    label: "【 魔法單字庫 】", color: COLOR_BLUE};
 const rectChest    = {x: 100, y: 480, w: 100, h: 100, type: "chest",    label: "【 裝備軍火箱 】", color: COLOR_GREEN};
 
-// 頂部功能按鈕
 const btnSave = { x: 20,  y: 20, w: 110, h: 36, text: "💾 存檔", color: COLOR_GREEN };
 const btnLoad = { x: 140, y: 20, w: 110, h: 36, text: "📂 讀檔", color: COLOR_PURPLE };
 const btnJob  = { x: 260, y: 20, w: 120, h: 36, text: "🔄 換職業", color: COLOR_BLUE };
@@ -496,12 +513,12 @@ const btnFullscreen = { x: SCREEN_WIDTH - 150, y: 20, w: 130, h: 36, text: "⛶ 
 // 虛擬控制器
 const joyMove = { x: 120, y: SCREEN_HEIGHT - 120, radius: 75, stickX: 120, stickY: 120, dirX: 0, dirY: 0, touchId: null };
 const joyShoot = { x: SCREEN_WIDTH - 120, y: SCREEN_HEIGHT - 120, radius: 75, stickX: SCREEN_WIDTH - 120, stickY: SCREEN_HEIGHT - 120, dirX: 0, dirY: 0, isAiming: false, touchId: null };
-const btnE = { x: SCREEN_WIDTH - 60, y: SCREEN_HEIGHT - 220, radius: 36, text: "E", label: "互動", justPressed: false, touchId: null };
-const btnSpace = { x: SCREEN_WIDTH - 150, y: SCREEN_HEIGHT - 220, radius: 36, text: "SPACE", label: "出戰", justPressed: false, touchId: null };
+const btnE = { x: SCREEN_WIDTH - 60, y: SCREEN_HEIGHT - 220, radius: 36, text: "E", label: "互動" };
+const btnSpace = { x: SCREEN_WIDTH - 150, y: SCREEN_HEIGHT - 220, radius: 36, text: "SPACE", label: "出戰" };
 const btnBack = { x: 850, y: 15, w: 150, h: 40, text: "⬅️ 放棄返回" };
 
 // ==========================================
-// 5. 存檔與讀檔系統 (LocalStorage)
+// 4. 存檔與讀檔系統
 // ==========================================
 function saveGame() {
     const data = {
@@ -552,216 +569,274 @@ function loadGame() {
 }
 
 // ==========================================
-// 6. 觸控與事件系統
+// 5. 觸控與事件系統 (精確座標換算)
 // ==========================================
-function getCanvasPos(e) {
+function getCanvasPos(clientX, clientY) {
     const rect = canvas.getBoundingClientRect();
-    const scaleX = canvas.width / rect.width;
-    const scaleY = canvas.height / rect.height;
-    return { x: (e.clientX - rect.left) * scaleX, y: (e.clientY - rect.top) * scaleY };
+    const scaleX = SCREEN_WIDTH / rect.width;
+    const scaleY = SCREEN_HEIGHT / rect.height;
+    return {
+        x: (clientX - rect.left) * scaleX,
+        y: (clientY - rect.top) * scaleY
+    };
 }
 
-function triggerFullscreen() {
-    const el = document.documentElement;
-    if (el.requestFullscreen) {
-        el.requestFullscreen().catch(() => {});
-    } else if (el.webkitRequestFullscreen) {
-        el.webkitRequestFullscreen().catch(() => {});
+function toggleFullscreen() {
+    const docEl = document.documentElement;
+    if (!document.fullscreenElement && !document.webkitFullscreenElement) {
+        if (docEl.requestFullscreen) docEl.requestFullscreen().catch(()=>{});
+        else if (docEl.webkitRequestFullscreen) docEl.webkitRequestFullscreen().catch(()=>{});
+    } else {
+        if (document.exitFullscreen) document.exitFullscreen().catch(()=>{});
+        else if (document.webkitExitFullscreen) document.webkitExitFullscreen().catch(()=>{});
     }
     if (screen.orientation && screen.orientation.lock) {
-        screen.orientation.lock("landscape").catch(() => {});
+        screen.orientation.lock("landscape").catch(()=>{});
     }
 }
 
-function processPointer(pos, identifier, isDown) {
-    if (isDown) {
-        // 全螢幕按鈕
-        if (pos.x >= btnFullscreen.x && pos.x <= btnFullscreen.x + btnFullscreen.w && pos.y >= btnFullscreen.y && pos.y <= btnFullscreen.y + btnFullscreen.h) {
-            triggerFullscreen();
+function handlePointerClick(pos) {
+    // 全螢幕按鈕
+    if (pos.x >= btnFullscreen.x && pos.x <= btnFullscreen.x + btnFullscreen.w && pos.y >= btnFullscreen.y && pos.y <= btnFullscreen.y + btnFullscreen.h) {
+        toggleFullscreen();
+        return;
+    }
+
+    // 大廳三大按鈕
+    if (state === "LOBBY") {
+        if (pos.x >= btnSave.x && pos.x <= btnSave.x + btnSave.w && pos.y >= btnSave.y && pos.y <= btnSave.y + btnSave.h) { saveGame(); return; }
+        if (pos.x >= btnLoad.x && pos.x <= btnLoad.x + btnLoad.w && pos.y >= btnLoad.y && pos.y <= btnLoad.y + btnLoad.h) { loadGame(); return; }
+        if (pos.x >= btnJob.x && pos.x <= btnJob.x + btnJob.w && pos.y >= btnJob.y && pos.y <= btnJob.y + btnJob.h) {
+            const jobs = ["戰士", "法師", "弓箭手"];
+            player.job = jobs[(jobs.indexOf(player.job) + 1) % 3];
+            player.applyJobStats();
+            infoMsg = `職業切換為【${player.job}】！`;
             return;
         }
+    }
 
-        // 大廳三大按鈕
-        if (state === "LOBBY") {
-            if (pos.x >= btnSave.x && pos.x <= btnSave.x + btnSave.w && pos.y >= btnSave.y && pos.y <= btnSave.y + btnSave.h) { saveGame(); return; }
-            if (pos.x >= btnLoad.x && pos.x <= btnLoad.x + btnLoad.w && pos.y >= btnLoad.y && pos.y <= btnLoad.y + btnLoad.h) { loadGame(); return; }
-            if (pos.x >= btnJob.x && pos.x <= btnJob.x + btnJob.w && pos.y >= btnJob.y && pos.y <= btnJob.y + btnJob.h) {
-                const jobs = ["戰士", "法師", "弓箭手"];
-                player.job = jobs[(jobs.indexOf(player.job) + 1) % 3];
-                player.applyJobStats();
-                infoMsg = `職業切換為【${player.job}】！`;
-                return;
+    // 全域返回鈕
+    if (state !== "LOBBY" && state !== "QUIZ") {
+        if (pos.x >= btnBack.x && pos.x <= btnBack.x + btnBack.w && pos.y >= btnBack.y && pos.y <= btnBack.y + btnBack.h) {
+            state = "LOBBY";
+            return;
+        }
+    }
+
+    // E 按鈕點擊
+    if (Math.hypot(pos.x - btnE.x, pos.y - btnE.y) < btnE.radius) {
+        triggerEAction();
+        return;
+    }
+
+    // SPACE 按鈕點擊
+    if (Math.hypot(pos.x - btnSpace.x, pos.y - btnSpace.y) < btnSpace.radius) {
+        triggerSpaceAction();
+        return;
+    }
+
+    // 預習單字卡片
+    if (state === "LEARN_STAGE") {
+        if (pos.x >= 680 && pos.x <= 840 && pos.y >= 15 && pos.y <= 55) { initDungeon(); return; }
+        stageWords.forEach((w, i) => {
+            const col = i % 4, row = Math.floor(i / 4);
+            const x = 30 + col * 240, y = 75 + row * 120;
+            if (pos.x >= x && pos.x <= x + 220 && pos.y >= y && pos.y <= y + 105) {
+                if (favoriteIds.includes(w.id)) {
+                    favoriteIds = favoriteIds.filter(id => id !== w.id);
+                    infoMsg = `☆ 取消收藏【${w.jp}】`;
+                } else {
+                    favoriteIds.push(w.id);
+                    infoMsg = `★ 已收藏【${w.jp}】！`;
+                }
             }
-        }
+        });
+        return;
+    }
 
-        // 全域返回鈕
-        if (state !== "LOBBY" && state !== "QUIZ") {
-            if (pos.x >= btnBack.x && pos.x <= btnBack.x + btnBack.w && pos.y >= btnBack.y && pos.y <= btnBack.y + btnBack.h) {
-                state = "LOBBY";
-                return;
+    // 寶箱問答
+    if (state === "QUIZ") {
+        quizOptions.forEach((opt, i) => {
+            const bx = 250 + (i % 2) * 270, by = 320 + Math.floor(i / 2) * 90;
+            if (pos.x >= bx && pos.x <= bx + 250 && pos.y >= by && pos.y <= by + 60) {
+                if (opt === currentQuizChest.word.zh) {
+                    const g = Math.floor(Math.random() * 50) + 30;
+                    player.gold += g;
+                    currentQuizChest.opened = true;
+                    if (Math.random() < 0.45) {
+                        healthPacks.push({x: currentQuizChest.x, y: currentQuizChest.y});
+                        infoMsg = `✨ 答對了！獲得 💰 ${g} 金幣與 💖 回血包！`;
+                    } else {
+                        infoMsg = `✨ 答對了！開啟寶箱獲得 💰 ${g} 金幣！`;
+                    }
+                } else {
+                    infoMsg = `❌ 答錯了！正確答案是『${currentQuizChest.word.zh}』。`;
+                }
+                state = "DUNGEON";
             }
-        }
+        });
+        return;
+    }
 
-        // E 按鈕 (僅觸發互動)
-        if (Math.hypot(pos.x - btnE.x, pos.y - btnE.y) < btnE.radius) {
-            btnE.justPressed = true;
-            return;
-        }
+    // 商店點擊
+    if (state === "SHOP") {
+        FOODS_DB.forEach((f, i) => {
+            const bx = 30 + (i % 5) * 190, by = 105 + Math.floor(i / 5) * 45;
+            if (pos.x >= bx + 32 && pos.x <= bx + 177 && pos.y >= by && pos.y <= by + 38) {
+                if (player.gold >= f.price) {
+                    player.gold -= f.price;
+                    inventoryFoods[f.name] = (inventoryFoods[f.name] || 0) + 1;
+                    infoMsg = `🛒 購買了【${f.name}】(庫存: ${inventoryFoods[f.name]})！`;
+                } else infoMsg = `❌ 金幣不足 ${f.price} 金幣！`;
+            }
+        });
+        PETS_DB.forEach((p, i) => {
+            const bx = 30 + (i % 5) * 190, by = 345 + Math.floor(i / 5) * 45;
+            if (pos.x >= bx + 32 && pos.x <= bx + 177 && pos.y >= by && pos.y <= by + 38) {
+                if (player.gold >= p.price) {
+                    player.gold -= p.price;
+                    pets.push(new Pet(p.name));
+                    infoMsg = `🛒 成功購買強力寵物【${p.name}】！`;
+                } else infoMsg = `❌ 金幣不足 ${p.price} 金幣！`;
+            }
+        });
+        return;
+    }
 
-        // SPACE 按鈕 (出戰/切換)
-        if (Math.hypot(pos.x - btnSpace.x, pos.y - btnSpace.y) < btnSpace.radius) {
-            btnSpace.justPressed = true;
-            return;
-        }
-
-        // 預習介面卡片點擊
-        if (state === "LEARN_STAGE") {
-            if (pos.x >= 680 && pos.x <= 840 && pos.y >= 15 && pos.y <= 55) { initDungeon(); return; }
-            stageWords.forEach((w, i) => {
-                const col = i % 4, row = Math.floor(i / 4);
-                const x = 30 + col * 240, y = 75 + row * 120;
-                if (pos.x >= x && pos.x <= x + 220 && pos.y >= y && pos.y <= y + 105) {
-                    if (favoriteIds.includes(w.id)) {
-                        favoriteIds = favoriteIds.filter(id => id !== w.id);
-                        infoMsg = `☆ 取消收藏【${w.jp}】`;
-                    } else {
-                        favoriteIds.push(w.id);
-                        infoMsg = `★ 已收藏【${w.jp}】！`;
-                    }
-                }
-            });
-            return;
-        }
-
-        // 寶箱問答選項
-        if (state === "QUIZ") {
-            quizOptions.forEach((opt, i) => {
-                const bx = 250 + (i % 2) * 270, by = 320 + Math.floor(i / 2) * 90;
-                if (pos.x >= bx && pos.x <= bx + 250 && pos.y >= by && pos.y <= by + 60) {
-                    if (opt === currentQuizChest.word.zh) {
-                        const g = Math.floor(Math.random() * 50) + 30;
-                        player.gold += g;
-                        currentQuizChest.opened = true;
-                        if (Math.random() < 0.45) {
-                            healthPacks.push({x: currentQuizChest.x, y: currentQuizChest.y});
-                            infoMsg = `✨ 答對了！獲得 💰 ${g} 金幣與 💖 回血包！`;
-                        } else {
-                            infoMsg = `✨ 答對了！開啟寶箱獲得 💰 ${g} 金幣！`;
-                        }
-                    } else {
-                        infoMsg = `❌ 答錯了！正確答案是『${currentQuizChest.word.zh}』。`;
-                    }
-                    state = "DUNGEON";
-                }
-            });
-            return;
-        }
-
-        // 商店購買
-        if (state === "SHOP") {
-            FOODS_DB.forEach((f, i) => {
-                const bx = 30 + (i % 5) * 190, by = 105 + Math.floor(i / 5) * 45;
-                if (pos.x >= bx + 32 && pos.x <= bx + 177 && pos.y >= by && pos.y <= by + 38) {
-                    if (player.gold >= f.price) {
-                        player.gold -= f.price;
-                        inventoryFoods[f.name] = (inventoryFoods[f.name] || 0) + 1;
-                        infoMsg = `🛒 購買了【${f.name}】(庫存: ${inventoryFoods[f.name]})！`;
-                    } else infoMsg = `❌ 金幣不足 ${f.price} 金幣！`;
-                }
-            });
-            PETS_DB.forEach((p, i) => {
-                const bx = 30 + (i % 5) * 190, by = 345 + Math.floor(i / 5) * 45;
-                if (pos.x >= bx + 32 && pos.x <= bx + 177 && pos.y >= by && pos.y <= by + 38) {
-                    if (player.gold >= p.price) {
-                        player.gold -= p.price;
-                        pets.push(new Pet(p.name));
-                        infoMsg = `🛒 成功購買強力寵物【${p.name}】！`;
-                    } else infoMsg = `❌ 金幣不足 ${p.price} 金幣！`;
-                }
-            });
-            return;
-        }
-
-        // 背包換裝
-        if (state === "BACKPACK") {
-            player.weapons.forEach((wName, i) => {
-                const bx = 30 + (i % 4) * 230, by = 120 + Math.floor(i / 4) * 60;
-                if (pos.x >= bx + 32 && pos.x <= bx + 212 && pos.y >= by && pos.y <= by + 45) {
-                    player.equipped_weapon = wName;
-                    infoMsg = `⚔️ 已裝備【${wName}】！`;
-                }
-            });
-            return;
-        }
+    // 背包換裝
+    if (state === "BACKPACK") {
+        player.weapons.forEach((wName, i) => {
+            const bx = 30 + (i % 4) * 230, by = 120 + Math.floor(i / 4) * 60;
+            if (pos.x >= bx + 32 && pos.x <= bx + 212 && pos.y >= by && pos.y <= by + 45) {
+                player.equipped_weapon = wName;
+                infoMsg = `⚔️ 已裝備【${wName}】！`;
+            }
+        });
+        return;
     }
 }
 
-canvas.addEventListener("pointerdown", (e) => {
-    const pos = getCanvasPos(e);
-
-    // 左側移動搖桿
-    const dMove = Math.hypot(pos.x - joyMove.x, pos.y - joyMove.y);
-    if (dMove < joyMove.radius * 1.8 && joyMove.touchId === null) {
-        joyMove.touchId = e.pointerId;
-        const angle = Math.atan2(pos.y - joyMove.y, pos.x - joyMove.x);
-        const dist = Math.min(dMove, joyMove.radius);
-        joyMove.stickX = joyMove.x + Math.cos(angle) * dist;
-        joyMove.stickY = joyMove.y + Math.sin(angle) * dist;
-        joyMove.dirX = Math.cos(angle) * (dist / joyMove.radius);
-        joyMove.dirY = Math.sin(angle) * (dist / joyMove.radius);
+function triggerEAction() {
+    if (state === "LOBBY") {
+        if (Math.hypot(player.x - (rectDoor.x + 50), player.y - (rectDoor.y + 40)) < 75) prepareStage();
+        else if (Math.hypot(player.x - (rectShop.x + 60), player.y - (rectShop.y + 45)) < 80) state = "SHOP";
+        else if (Math.hypot(player.x - (rectPetHouse.x + 60), player.y - (rectPetHouse.y + 50)) < 80) state = "PET_HOUSE";
+        else if (Math.hypot(player.x - (rectVocab.x + 50), player.y - (rectVocab.y + 50)) < 75) state = "VOCAB_BANK";
+        else if (Math.hypot(player.x - (rectChest.x + 50), player.y - (rectChest.y + 50)) < 75) state = "BACKPACK";
+    } else if (state === "PET_HOUSE") {
+        pets.forEach((p) => {
+            if (Math.hypot(player.x - p.x, player.y - p.y) < 55) {
+                const avail = Object.keys(inventoryFoods).find(k => inventoryFoods[k] > 0);
+                if (avail) {
+                    inventoryFoods[avail]--;
+                    const fInfo = FOODS_DB.find(f => f.name === avail);
+                    if (p.feed(fInfo.exp)) infoMsg = `🎉 寵物【${p.name}】成功進化為【${p.getStageStr()}】！`;
+                    else infoMsg = `🍖 餵食了【${avail}】(+${fInfo.exp} EXP，當前: ${p.exp}/${p.reqExp})！`;
+                } else infoMsg = "❌ 庫存沒有食物，請去商店購買！";
+            }
+        });
     }
+}
 
-    // 右側拉動式射擊搖桿 (地牢迷宮限定)
-    const dShoot = Math.hypot(pos.x - joyShoot.x, pos.y - joyShoot.y);
-    if (dShoot < joyShoot.radius * 1.8 && joyShoot.touchId === null && state === "DUNGEON") {
-        joyShoot.touchId = e.pointerId;
-        joyShoot.isAiming = true;
-        const angle = Math.atan2(pos.y - joyShoot.y, pos.x - joyShoot.x);
-        const dist = Math.min(dShoot, joyShoot.radius);
-        joyShoot.stickX = joyShoot.x + Math.cos(angle) * dist;
-        joyShoot.stickY = joyShoot.y + Math.sin(angle) * dist;
-        joyShoot.dirX = Math.cos(angle) * (dist / joyShoot.radius);
-        joyShoot.dirY = Math.sin(angle) * (dist / joyShoot.radius);
+function triggerSpaceAction() {
+    if (state === "LOBBY") {
+        const jobs = ["戰士", "法師", "弓箭手"];
+        player.job = jobs[(jobs.indexOf(player.job) + 1) % 3];
+        player.applyJobStats();
+        infoMsg = `職業切換為【${player.job}】！`;
+    } else if (state === "PET_HOUSE") {
+        pets.forEach((p, idx) => {
+            if (Math.hypot(player.x - p.x, player.y - p.y) < 55) {
+                activePetIdx = idx;
+                infoMsg = `🐾 【${p.name}】已設為出戰寵物！`;
+            }
+        });
     }
+}
 
-    processPointer(pos, e.pointerId, true);
-});
+// 監聽原生 Touch 事件
+canvas.addEventListener("touchstart", (e) => {
+    e.preventDefault();
+    for (let i = 0; i < e.changedTouches.length; i++) {
+        const t = e.changedTouches[i];
+        const pos = getCanvasPos(t.clientX, t.clientY);
 
-canvas.addEventListener("pointermove", (e) => {
-    const pos = getCanvasPos(e);
-    if (e.pointerId === joyMove.touchId) {
-        const dMove = Math.hypot(pos.x - joyMove.x, pos.y - joyMove.y);
-        const angle = Math.atan2(pos.y - joyMove.y, pos.x - joyMove.x);
-        const dist = Math.min(dMove, joyMove.radius);
-        joyMove.stickX = joyMove.x + Math.cos(angle) * dist;
-        joyMove.stickY = joyMove.y + Math.sin(angle) * dist;
-        joyMove.dirX = Math.cos(angle) * (dist / joyMove.radius);
-        joyMove.dirY = Math.sin(angle) * (dist / joyMove.radius);
+        // 左側搖桿
+        if (Math.hypot(pos.x - joyMove.x, pos.y - joyMove.y) < joyMove.radius * 1.8 && joyMove.touchId === null) {
+            joyMove.touchId = t.identifier;
+            const angle = Math.atan2(pos.y - joyMove.y, pos.x - joyMove.x);
+            const dist = Math.min(Math.hypot(pos.x - joyMove.x, pos.y - joyMove.y), joyMove.radius);
+            joyMove.stickX = joyMove.x + Math.cos(angle) * dist;
+            joyMove.stickY = joyMove.y + Math.sin(angle) * dist;
+            joyMove.dirX = Math.cos(angle) * (dist / joyMove.radius);
+            joyMove.dirY = Math.sin(angle) * (dist / joyMove.radius);
+            continue;
+        }
+
+        // 右側射擊搖桿 (迷宮限定)
+        if (state === "DUNGEON" && Math.hypot(pos.x - joyShoot.x, pos.y - joyShoot.y) < joyShoot.radius * 1.8 && joyShoot.touchId === null) {
+            joyShoot.touchId = t.identifier;
+            joyShoot.isAiming = true;
+            const angle = Math.atan2(pos.y - joyShoot.y, pos.x - joyShoot.x);
+            const dist = Math.min(Math.hypot(pos.x - joyShoot.x, pos.y - joyShoot.y), joyShoot.radius);
+            joyShoot.stickX = joyShoot.x + Math.cos(angle) * dist;
+            joyShoot.stickY = joyShoot.y + Math.sin(angle) * dist;
+            joyShoot.dirX = Math.cos(angle) * (dist / joyShoot.radius);
+            joyShoot.dirY = Math.sin(angle) * (dist / joyShoot.radius);
+            continue;
+        }
+
+        handlePointerClick(pos);
     }
-    if (e.pointerId === joyShoot.touchId && state === "DUNGEON") {
-        const dShoot = Math.hypot(pos.x - joyShoot.x, pos.y - joyShoot.y);
-        const angle = Math.atan2(pos.y - joyShoot.y, pos.x - joyShoot.x);
-        const dist = Math.min(dShoot, joyShoot.radius);
-        joyShoot.stickX = joyShoot.x + Math.cos(angle) * dist;
-        joyShoot.stickY = joyShoot.y + Math.sin(angle) * dist;
-        joyShoot.dirX = Math.cos(angle) * (dist / joyShoot.radius);
-        joyShoot.dirY = Math.sin(angle) * (dist / joyShoot.radius);
-    }
-});
+}, {passive: false});
 
-canvas.addEventListener("pointerup", (e) => {
-    if (e.pointerId === joyMove.touchId) {
+canvas.addEventListener("touchmove", (e) => {
+    e.preventDefault();
+    for (let i = 0; i < e.touches.length; i++) {
+        const t = e.touches[i];
+        const pos = getCanvasPos(t.clientX, t.clientY);
+
+        if (t.identifier === joyMove.touchId) {
+            const angle = Math.atan2(pos.y - joyMove.y, pos.x - joyMove.x);
+            const dist = Math.min(Math.hypot(pos.x - joyMove.x, pos.y - joyMove.y), joyMove.radius);
+            joyMove.stickX = joyMove.x + Math.cos(angle) * dist;
+            joyMove.stickY = joyMove.y + Math.sin(angle) * dist;
+            joyMove.dirX = Math.cos(angle) * (dist / joyMove.radius);
+            joyMove.dirY = Math.sin(angle) * (dist / joyMove.radius);
+        }
+
+        if (state === "DUNGEON" && t.identifier === joyShoot.touchId) {
+            const angle = Math.atan2(pos.y - joyShoot.y, pos.x - joyShoot.x);
+            const dist = Math.min(Math.hypot(pos.x - joyShoot.x, pos.y - joyShoot.y), joyShoot.radius);
+            joyShoot.stickX = joyShoot.x + Math.cos(angle) * dist;
+            joyShoot.stickY = joyShoot.y + Math.sin(angle) * dist;
+            joyShoot.dirX = Math.cos(angle) * (dist / joyShoot.radius);
+            joyShoot.dirY = Math.sin(angle) * (dist / joyShoot.radius);
+        }
+    }
+}, {passive: false});
+
+canvas.addEventListener("touchend", (e) => {
+    e.preventDefault();
+    const currentIds = Array.from(e.touches).map(t => t.identifier);
+    if (!currentIds.includes(joyMove.touchId)) {
         joyMove.touchId = null; joyMove.stickX = joyMove.x; joyMove.stickY = joyMove.y;
         joyMove.dirX = 0; joyMove.dirY = 0;
     }
-    if (e.pointerId === joyShoot.touchId) {
+    if (!currentIds.includes(joyShoot.touchId)) {
         joyShoot.touchId = null; joyShoot.stickX = joyShoot.x; joyShoot.stickY = joyShoot.y;
         joyShoot.dirX = 0; joyShoot.dirY = 0; joyShoot.isAiming = false;
     }
+}, {passive: false});
+
+// 支援滑鼠點擊
+canvas.addEventListener("mousedown", (e) => {
+    const pos = getCanvasPos(e.clientX, e.clientY);
+    handlePointerClick(pos);
 });
 
 // ==========================================
-// 7. 核心遊戲流程
+// 6. 核心流程控制
 // ==========================================
 function prepareStage() {
     const unlearned = ALL_VOCABULARY.filter(w => !learnedIds.includes(w.id));
@@ -822,7 +897,7 @@ function spawnWave(wNum) {
 }
 
 // ==========================================
-// 8. 主更新邏輯
+// 7. 主邏輯更新
 // ==========================================
 function update() {
     player.x += joyMove.dirX * player.speed;
@@ -836,45 +911,8 @@ function update() {
 
     if (state === "LOBBY") {
         if (pet) pet.follow(player.x, player.y);
-
-        // SPACE 鍵：切換職業
-        if (btnSpace.justPressed) {
-            btnSpace.justPressed = false;
-            const jobs = ["戰士", "法師", "弓箭手"];
-            player.job = jobs[(jobs.indexOf(player.job) + 1) % 3];
-            player.applyJobStats();
-            infoMsg = `職業切換為【${player.job}】！`;
-        }
-
-        // E 鍵：進入設施 (修復換職業錯亂問題)
-        if (btnE.justPressed) {
-            btnE.justPressed = false;
-            if (Math.hypot(player.x - (rectDoor.x + 50), player.y - (rectDoor.y + 40)) < 75) prepareStage();
-            else if (Math.hypot(player.x - (rectShop.x + 60), player.y - (rectShop.y + 45)) < 80) state = "SHOP";
-            else if (Math.hypot(player.x - (rectPetHouse.x + 60), player.y - (rectPetHouse.y + 50)) < 80) state = "PET_HOUSE";
-            else if (Math.hypot(player.x - (rectVocab.x + 50), player.y - (rectVocab.y + 50)) < 75) state = "VOCAB_BANK";
-            else if (Math.hypot(player.x - (rectChest.x + 50), player.y - (rectChest.y + 50)) < 75) state = "BACKPACK";
-        }
     } else if (state === "PET_HOUSE") {
-        pets.forEach((p, idx) => {
-            p.updateAI();
-            if (Math.hypot(player.x - p.x, player.y - p.y) < 55) {
-                if (btnSpace.justPressed) {
-                    btnSpace.justPressed = false;
-                    activePetIdx = idx;
-                    infoMsg = `🐾 【${p.name}】已設為出戰寵物！`;
-                } else if (btnE.justPressed) {
-                    btnE.justPressed = false;
-                    const avail = Object.keys(inventoryFoods).find(k => inventoryFoods[k] > 0);
-                    if (avail) {
-                        inventoryFoods[avail]--;
-                        const fInfo = FOODS_DB.find(f => f.name === avail);
-                        if (p.feed(fInfo.exp)) infoMsg = `🎉 寵物【${p.name}】成功進化為【${p.getStageStr()}】！`;
-                        else infoMsg = `🍖 餵食了【${avail}】(+${fInfo.exp} EXP，當前: ${p.exp}/${p.reqExp})！`;
-                    } else infoMsg = "❌ 庫存沒有食物，請去商店購買！";
-                }
-            }
-        });
+        pets.forEach(p => p.updateAI());
     } else if (state === "DUNGEON") {
         if (countdownTimer > 0) { countdownTimer--; return; }
 
@@ -900,7 +938,7 @@ function update() {
             }
         }
 
-        // 拉動式右側射擊搖桿 (按住拉動連續射擊)
+        // 射擊搖桿連續射擊
         if (joyShoot.isAiming) {
             shootCooldownTimer++;
             if (shootCooldownTimer >= 10) {
@@ -915,7 +953,7 @@ function update() {
             shootCooldownTimer = 10;
         }
 
-        // 子彈碰撞判定
+        // 子彈碰撞
         for (let i = bullets.length - 1; i >= 0; i--) {
             const b = bullets[i];
             b.x += b.vx; b.y += b.vy;
@@ -958,7 +996,7 @@ function update() {
             }
         }
 
-        // 拾取物品
+        // 撿武器與回血包
         for (let i = groundWeapons.length - 1; i >= 0; i--) {
             if (Math.hypot(player.x - groundWeapons[i].x, player.y - groundWeapons[i].y) < 30) {
                 if (!player.weapons.includes(groundWeapons[i].name)) {
@@ -977,7 +1015,7 @@ function update() {
             }
         }
 
-        // 怪物移動與攻擊
+        // 怪物攻擊
         stageMonsters.forEach(m => {
             const angle = Math.atan2(player.y - m.y, player.x - m.x);
             m.x += Math.cos(angle) * m.speed; m.y += Math.sin(angle) * m.speed;
@@ -994,6 +1032,7 @@ function update() {
             }
         }
 
+        // 波次推進
         if (stageMonsters.length === 0) {
             if (currentWave < maxWaves) {
                 currentWave++; spawnWave(currentWave);
@@ -1037,7 +1076,7 @@ function update() {
 }
 
 // ==========================================
-// 9. 渲染模組
+// 8. 繪圖渲染
 // ==========================================
 function draw() {
     ctx.clearRect(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT);
@@ -1066,7 +1105,7 @@ function draw() {
         const pet = pets[activePetIdx];
         if (pet) drawPixelPet(ctx, pet.x, pet.y, pet.name, pet.stage);
 
-        // 懸浮提示
+        // 懸浮提示框
         let promptTxt = null;
         if (Math.hypot(player.x - (rectDoor.x + 50), player.y - (rectDoor.y + 40)) < 75) promptTxt = "按 [E] 進入迷宮";
         else if (Math.hypot(player.x - (rectShop.x + 60), player.y - (rectShop.y + 45)) < 80) promptTxt = "按 [E] 進入商店";
@@ -1134,7 +1173,6 @@ function draw() {
         const pet = pets[activePetIdx];
         if (pet) drawPixelPet(ctx, pet.x - camX, pet.y - camY, pet.name, pet.stage);
 
-        // 頂部 HUD
         ctx.fillStyle = "rgb(15, 18, 24)"; ctx.fillRect(0, 0, SCREEN_WIDTH, 50);
         ctx.fillStyle = COLOR_WHITE; ctx.font = "bold 18px sans-serif";
         const waveStr = !bossSpawned ? `第 ${currentWave}/${maxWaves} 波` : "BOSS 決戰";
@@ -1287,7 +1325,7 @@ function draw() {
         }
     }
 
-    // 繪製虛擬控制器 (左側移動、右側射擊輪盤、E、SPACE)
+    // 虛擬控制器渲染 (左側移動、右側射擊輪盤、E、SPACE)
     if (["LOBBY", "DUNGEON", "PET_HOUSE"].includes(state)) {
         ctx.strokeStyle = "rgba(255, 255, 255, 0.35)"; ctx.lineWidth = 3;
         ctx.beginPath(); ctx.arc(joyMove.x, joyMove.y, joyMove.radius, 0, Math.PI*2); ctx.stroke();
@@ -1304,11 +1342,13 @@ function draw() {
         }
 
         if (state === "LOBBY" || state === "PET_HOUSE") {
+            // E 鍵
             ctx.fillStyle = COLOR_GOLD; ctx.beginPath(); ctx.arc(btnE.x, btnE.y, btnE.radius, 0, Math.PI*2); ctx.fill();
             ctx.strokeStyle = COLOR_WHITE; ctx.lineWidth = 2; ctx.stroke();
             ctx.fillStyle = COLOR_BG_DARK; ctx.font = "bold 18px sans-serif"; ctx.fillText(btnE.text, btnE.x - 7, btnE.y + 6);
             ctx.fillStyle = COLOR_WHITE; ctx.font = "bold 12px sans-serif"; ctx.fillText(btnE.label, btnE.x - 12, btnE.y + 24);
 
+            // SPACE 鍵
             ctx.fillStyle = COLOR_PURPLE; ctx.beginPath(); ctx.arc(btnSpace.x, btnSpace.y, btnSpace.radius, 0, Math.PI*2); ctx.fill();
             ctx.strokeStyle = COLOR_WHITE; ctx.lineWidth = 2; ctx.stroke();
             ctx.fillStyle = COLOR_WHITE; ctx.font = "bold 12px sans-serif"; ctx.fillText(btnSpace.text, btnSpace.x - 18, btnSpace.y + 4);
@@ -1317,7 +1357,7 @@ function draw() {
 }
 
 // ==========================================
-// 10. 主循環啟動
+// 9. 主循環啟動
 // ==========================================
 function gameLoop() {
     update();
