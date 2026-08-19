@@ -25,7 +25,7 @@
 
 <div id="rotate-notice">
     <div style="font-size: 54px; margin-bottom: 20px;">📱 🔄</div>
-    請將手機橫向旋轉，並點擊畫面進入全螢幕遊玩
+    請將手機橫向旋轉遊玩
 </div>
 
 <div id="canvas-container">
@@ -58,88 +58,88 @@ const COLOR_GRAY      = "#646e7d";
 const COLOR_ORANGE    = "#e67e22";
 
 // ==========================================
-// 2. 完整梯度平衡數據庫
+// 2. 完整梯度平衡數據庫 (20武器、20食物、20寵物、20怪物、30單字)
 // ==========================================
 const WEAPONS_DB = [
-    {"name": "破舊短劍", "atk": 5, "weight": 50, "type": "sword"},
-    {"name": "木弓",     "atk": 7, "weight": 45, "type": "bow"},
-    {"name": "破舊手槍", "atk": 8, "weight": 40, "type": "gun"},
-    {"name": "精鋼長劍", "atk": 11, "weight": 35, "type": "sword"},
-    {"name": "木法杖",   "atk": 13, "weight": 30, "type": "staff"},
-    {"name": "左輪手槍", "atk": 15, "weight": 28, "type": "gun"},
-    {"name": "獵人長弓", "atk": 17, "weight": 25, "type": "bow"},
-    {"name": "武士刀",   "atk": 19, "weight": 22, "type": "sword"},
-    {"name": "大蔥戰刃", "atk": 21, "weight": 20, "type": "leek"},
-    {"name": "神奇鹹魚", "atk": 23, "weight": 18, "type": "fish"},
-    {"name": "火焰法杖", "atk": 25, "weight": 16, "type": "staff"},
-    {"name": "疾風之弓", "atk": 27, "weight": 14, "type": "bow"},
-    {"name": "霰彈槍",   "atk": 29, "weight": 12, "type": "gun"},
-    {"name": "騎士巨劍", "atk": 32, "weight": 10, "type": "sword"},
-    {"name": "寒冰法杖", "atk": 34, "weight": 8, "type": "staff"},
-    {"name": "衝鋒槍",   "atk": 36, "weight": 6, "type": "gun"},
-    {"name": "精靈星弓", "atk": 39, "weight": 5, "type": "bow"},
-    {"name": "雷電法杖", "atk": 42, "weight": 4, "type": "staff"},
-    {"name": "光劍-紅",  "atk": 45, "weight": 3, "type": "light"},
-    {"name": "賢者之杖", "atk": 50, "weight": 2, "type": "staff"}
+    {name: "破舊短劍", atk: 5, weight: 50, type: "sword"},
+    {name: "木弓",     atk: 7, weight: 45, type: "bow"},
+    {name: "破舊手槍", atk: 8, weight: 40, type: "gun"},
+    {name: "精鋼長劍", atk: 11, weight: 35, type: "sword"},
+    {name: "木法杖",   atk: 13, weight: 30, type: "staff"},
+    {name: "左輪手槍", atk: 15, weight: 28, type: "gun"},
+    {name: "獵人長弓", atk: 17, weight: 25, type: "bow"},
+    {name: "武士刀",   atk: 19, weight: 22, type: "sword"},
+    {name: "大蔥戰刃", atk: 21, weight: 20, type: "leek"},
+    {name: "神奇鹹魚", atk: 23, weight: 18, type: "fish"},
+    {name: "火焰法杖", atk: 25, weight: 16, type: "staff"},
+    {name: "疾風之弓", atk: 27, weight: 14, type: "bow"},
+    {name: "霰彈槍",   atk: 29, weight: 12, type: "gun"},
+    {name: "騎士巨劍", atk: 32, weight: 10, type: "sword"},
+    {name: "寒冰法杖", atk: 34, weight: 8, type: "staff"},
+    {name: "衝鋒槍",   atk: 36, weight: 6, type: "gun"},
+    {name: "精靈星弓", atk: 39, weight: 5, type: "bow"},
+    {name: "雷電法杖", atk: 42, weight: 4, type: "staff"},
+    {name: "光劍-紅",  atk: 45, weight: 3, type: "light"},
+    {name: "賢者之杖", atk: 50, weight: 2, type: "staff"}
 ];
 
 const FOODS_DB = [
-    {"name": "蘋果",       "price": 15,  "exp": 20}, {"name": "香蕉",       "price": 20,  "exp": 25},
-    {"name": "草莓",       "price": 25,  "exp": 30}, {"name": "葡萄",       "price": 30,  "exp": 35},
-    {"name": "西瓜",       "price": 35,  "exp": 40}, {"name": "烤蘿蔔",     "price": 40,  "exp": 45},
-    {"name": "高麗菜沙拉", "price": 45,  "exp": 50}, {"name": "烤玉米",     "price": 50,  "exp": 55},
-    {"name": "南瓜派",     "price": 60,  "exp": 60}, {"name": "炸茄子",     "price": 70,  "exp": 65},
-    {"name": "麥香麵包",   "price": 80,  "exp": 70}, {"name": "飯糰",       "price": 90,  "exp": 75},
-    {"name": "炒葵花子",   "price": 100, "exp": 80}, {"name": "花草茶",     "price": 110, "exp": 85},
-    {"name": "特級辣肉丸", "price": 120, "exp": 90}, {"name": "藍莓蛋糕",   "price": 135, "exp": 95},
-    {"name": "櫻桃布丁",   "price": 150, "exp": 100}, {"name": "水蜜桃凍",   "price": 165, "exp": 105},
-    {"name": "鮮檸檬汁",   "price": 180, "exp": 110}, {"name": "哈密瓜聖代", "price": 200, "exp": 120}
+    {name: "蘋果",       price: 15,  exp: 20}, {name: "香蕉",       price: 20,  exp: 25},
+    {name: "草莓",       price: 25,  exp: 30}, {name: "葡萄",       price: 30,  exp: 35},
+    {name: "西瓜",       price: 35,  exp: 40}, {name: "烤蘿蔔",     price: 40,  exp: 45},
+    {name: "高麗菜沙拉", price: 45,  exp: 50}, {name: "烤玉米",     price: 50,  exp: 55},
+    {name: "南瓜派",     price: 60,  exp: 60}, {name: "炸茄子",     price: 70,  exp: 65},
+    {name: "麥香麵包",   price: 80,  exp: 70}, {name: "飯糰",       price: 90,  exp: 75},
+    {name: "炒葵花子",   price: 100, exp: 80}, {name: "花草茶",     price: 110, exp: 85},
+    {name: "特級辣肉丸", price: 120, exp: 90}, {name: "藍莓蛋糕",   price: 135, exp: 95},
+    {name: "櫻桃布丁",   price: 150, exp: 100}, {name: "水蜜桃凍",   price: 165, exp: 105},
+    {name: "鮮檸檬汁",   price: 180, exp: 110}, {name: "哈密瓜聖代", price: 200, exp: 120}
 ];
 
 const PETS_DB = [
-    {"name": "柴犬",     "price": 100,  "atk": 4,  "req_exp": 50},
-    {"name": "波斯貓",   "price": 150,  "atk": 5,  "req_exp": 55},
-    {"name": "迷你豬",   "price": 200,  "atk": 6,  "req_exp": 60},
-    {"name": "綠史萊姆", "price": 250,  "atk": 7,  "req_exp": 65},
-    {"name": "小精靈",   "price": 300,  "atk": 8,  "req_exp": 70},
-    {"name": "風鈴鳥",   "price": 350,  "atk": 9,  "req_exp": 75},
-    {"name": "企鵝",     "price": 400,  "atk": 10, "req_exp": 80},
-    {"name": "草泥馬",   "price": 450,  "atk": 11, "req_exp": 85},
-    {"name": "熊貓",     "price": 500,  "atk": 12, "req_exp": 90},
-    {"name": "雷電鼠",   "price": 600,  "atk": 14, "req_exp": 100},
-    {"name": "夜貓鷹",   "price": 700,  "atk": 15, "req_exp": 110},
-    {"name": "岩石怪",   "price": 800,  "atk": 17, "req_exp": 120},
-    {"name": "太陽花精", "price": 900,  "atk": 18, "req_exp": 130},
-    {"name": "幽靈水母", "price": 1000, "atk": 20, "req_exp": 140},
-    {"name": "冰霜狼",   "price": 1100, "atk": 22, "req_exp": 150},
-    {"name": "機械狗",   "price": 1200, "atk": 23, "req_exp": 160},
-    {"name": "彩虹鹿",   "price": 1300, "atk": 24, "req_exp": 170},
-    {"name": "小火龍",   "price": 1400, "atk": 26, "req_exp": 180},
-    {"name": "羽蛇獸",   "price": 1450, "atk": 27, "req_exp": 190},
-    {"name": "九尾狐",   "price": 1500, "atk": 28, "req_exp": 200}
+    {name: "柴犬",     price: 100,  atk: 4,  req_exp: 50},
+    {name: "波斯貓",   price: 150,  atk: 5,  req_exp: 55},
+    {name: "迷你豬",   price: 200,  atk: 6,  req_exp: 60},
+    {name: "綠史萊姆", price: 250,  atk: 7,  req_exp: 65},
+    {name: "小精靈",   price: 300,  atk: 8,  req_exp: 70},
+    {name: "風鈴鳥",   price: 350,  atk: 9,  req_exp: 75},
+    {name: "企鵝",     price: 400,  atk: 10, req_exp: 80},
+    {name: "草泥馬",   price: 450,  atk: 11, req_exp: 85},
+    {name: "熊貓",     price: 500,  atk: 12, req_exp: 90},
+    {name: "雷電鼠",   price: 600,  atk: 14, req_exp: 100},
+    {name: "夜貓鷹",   price: 700,  atk: 15, req_exp: 110},
+    {name: "岩石怪",   price: 800,  atk: 17, req_exp: 120},
+    {name: "太陽花精", price: 900,  atk: 18, req_exp: 130},
+    {name: "幽靈水母", price: 1000, atk: 20, req_exp: 140},
+    {name: "冰霜狼",   price: 1100, atk: 22, req_exp: 150},
+    {name: "機械狗",   price: 1200, atk: 23, req_exp: 160},
+    {name: "彩虹鹿",   price: 1300, atk: 24, req_exp: 170},
+    {name: "小火龍",   price: 1400, atk: 26, req_exp: 180},
+    {name: "羽蛇獸",   price: 1450, atk: 27, req_exp: 190},
+    {name: "九尾狐",   price: 1500, atk: 28, req_exp: 200}
 ];
 
 const MONSTER_TYPES = [
-    {"name": "綠史萊姆",   "hp": 90,  "atk": 5,  "speed": 1.5, "color": "#2ecc71"},
-    {"name": "野怪哥布林", "hp": 135, "atk": 8,  "speed": 1.8, "color": "#e67e22"},
-    {"name": "骷髏弓箭手", "hp": 120, "atk": 10, "speed": 2.0, "color": "#ecf0f1"},
-    {"name": "吸血蝙蝠",   "hp": 80,  "atk": 7,  "speed": 2.8, "color": "#9b59b6"},
-    {"name": "劇毒蜘蛛",   "hp": 150, "atk": 10, "speed": 1.6, "color": "#8e44ad"},
-    {"name": "瘋狂野豬",   "hp": 210, "atk": 13, "speed": 2.2, "color": "#d35400"},
-    {"name": "地牢幽靈",   "hp": 110, "atk": 15, "speed": 2.4, "color": "#3498db"},
-    {"name": "岩石守衛",   "hp": 330, "atk": 9,  "speed": 1.0, "color": "#7f8c8d"},
-    {"name": "蜥蜴人戰士", "hp": 240, "atk": 15, "speed": 2.1, "color": "#27ae60"},
-    {"name": "黑狂狼",     "hp": 195, "atk": 17, "speed": 2.6, "color": "#2c3e50"},
-    {"name": "黑暗騎士",   "hp": 360, "atk": 18, "speed": 1.7, "color": "#34495e"},
-    {"name": "泥偶巨人",   "hp": 420, "atk": 14, "speed": 1.1, "color": "#b4825a"},
-    {"name": "地獄咒術師", "hp": 180, "atk": 22, "speed": 1.9, "color": "#c0392b"},
-    {"name": "沙漠毒蠍",   "hp": 225, "atk": 16, "speed": 2.3, "color": "#f1c40f"},
-    {"name": "鋼鐵石像鬼", "hp": 390, "atk": 20, "speed": 1.4, "color": "#95a5a6"},
-    {"name": "食人花精",   "hp": 270, "atk": 18, "speed": 1.3, "color": "#1e8449"},
-    {"name": "熔岩怪物",   "hp": 450, "atk": 24, "speed": 1.5, "color": "#e74c3c"},
-    {"name": "虛空影魔",   "hp": 255, "atk": 26, "speed": 2.7, "color": "#16a085"},
-    {"name": "死靈法師",   "hp": 300, "atk": 28, "speed": 1.8, "color": "#8e44ad"},
-    {"name": "龍人近衛兵", "hp": 540, "atk": 30, "speed": 2.0, "color": "#c0392b"}
+    {name: "綠史萊姆",   hp: 90,  atk: 5,  speed: 1.5, color: "#2ecc71"},
+    {name: "野怪哥布林", hp: 135, atk: 8,  speed: 1.8, color: "#e67e22"},
+    {name: "骷髏弓箭手", hp: 120, atk: 10, speed: 2.0, color: "#ecf0f1"},
+    {name: "吸血蝙蝠",   hp: 80,  atk: 7,  speed: 2.8, color: "#9b59b6"},
+    {name: "劇毒蜘蛛",   hp: 150, atk: 10, speed: 1.6, color: "#8e44ad"},
+    {name: "瘋狂野豬",   hp: 210, atk: 13, speed: 2.2, color: "#d35400"},
+    {name: "地牢幽靈",   hp: 110, atk: 15, speed: 2.4, color: "#3498db"},
+    {name: "岩石守衛",   hp: 330, atk: 9,  speed: 1.0, color: "#7f8c8d"},
+    {name: "蜥蜴人戰士", hp: 240, atk: 15, speed: 2.1, color: "#27ae60"},
+    {name: "黑狂狼",     hp: 195, atk: 17, speed: 2.6, color: "#2c3e50"},
+    {name: "黑暗騎士",   hp: 360, atk: 18, speed: 1.7, color: "#34495e"},
+    {name: "泥偶巨人",   hp: 420, atk: 14, speed: 1.1, color: "#b4825a"},
+    {name: "地獄咒術師", hp: 180, atk: 22, speed: 1.9, color: "#c0392b"},
+    {name: "沙漠毒蠍",   hp: 225, atk: 16, speed: 2.3, color: "#f1c40f"},
+    {name: "鋼鐵石像鬼", hp: 390, atk: 20, speed: 1.4, color: "#95a5a6"},
+    {name: "食人花精",   hp: 270, atk: 18, speed: 1.3, color: "#1e8449"},
+    {name: "熔岩怪物",   hp: 450, atk: 24, speed: 1.5, color: "#e74c3c"},
+    {name: "虛空影魔",   hp: 255, atk: 26, speed: 2.7, color: "#16a085"},
+    {name: "死靈法師",   hp: 300, atk: 28, speed: 1.8, color: "#8e44ad"},
+    {name: "龍人近衛兵", hp: 540, atk: 30, speed: 2.0, color: "#c0392b"}
 ];
 
 const ALL_VOCABULARY = [
@@ -154,14 +154,14 @@ const ALL_VOCABULARY = [
     {id: 17, jp: "あめ", romaji: "ame", zh: "雨水"}, {id: 18, jp: "ゆき", romaji: "yuki", zh: "白雪"},
     {id: 19, jp: "かぜ", romaji: "kaze", zh: "微風"}, {id: 20, jp: "つき", romaji: "tsuki", zh: "月亮"},
     {id: 21, jp: "ともだち", romaji: "tomodachi", zh: "朋友"}, {id: 22, jp: "せんせい", romaji: "sensei", zh: "老師"},
-    {id: 23, jp: "がくせい", romaji: "gakusei", zh: "學生"}, {id: 24, jp: "がっこう", romaji: "gakkou", zh: "學校"},
+    {id: 23, jp: " gakusei", romaji: "gakusei", zh: "學生"}, {id: 24, jp: "がっこう", romaji: "gakkou", zh: "學校"},
     {id: 25, jp: "いえ", romaji: "ie", zh: "家"}, {id: 26, jp: "でんしゃ", romaji: "densha", zh: "電車"},
     {id: 27, jp: "えき", romaji: "eki", zh: "車站"}, {id: 28, jp: "さかな", romaji: "sakana", zh: "魚"},
     {id: 29, jp: "にく", romaji: "niku", zh: "肉"}, {id: 30, jp: "やさい", romaji: "yasai", zh: "蔬菜"}
 ];
 
 // ==========================================
-// 3. 1:1 程序化像素畫布生成器
+// 3. 像素繪圖
 // ==========================================
 function drawPixelHero(ctx, x, y, job) {
     ctx.save();
@@ -232,24 +232,24 @@ function drawPixelFood(ctx, x, y, name) {
     ctx.save();
     ctx.translate(x, y);
     const idx = FOODS_DB.findIndex(f => f.name === name);
-    if (idx === 0) { // 蘋果
+    if (idx === 0) {
         ctx.fillStyle = COLOR_RED; ctx.beginPath(); ctx.arc(14, 16, 10, 0, Math.PI*2); ctx.fill();
         ctx.fillStyle = "rgb(100, 50, 20)"; ctx.fillRect(13, 2, 3, 6);
-    } else if (idx === 1) { // 香蕉
+    } else if (idx === 1) {
         ctx.strokeStyle = COLOR_GOLD; ctx.lineWidth = 6; ctx.beginPath(); ctx.arc(14, 14, 10, 0.2, 2.2); ctx.stroke();
-    } else if (idx === 2) { // 草莓
+    } else if (idx === 2) {
         ctx.fillStyle = COLOR_RED; ctx.beginPath(); ctx.moveTo(8, 8); ctx.lineTo(20, 8); ctx.lineTo(14, 24); ctx.closePath(); ctx.fill();
         ctx.fillStyle = COLOR_GREEN; ctx.beginPath(); ctx.moveTo(10, 8); ctx.lineTo(14, 4); ctx.lineTo(18, 8); ctx.closePath(); ctx.fill();
-    } else if (idx === 4) { // 西瓜
+    } else if (idx === 4) {
         ctx.fillStyle = COLOR_GREEN; ctx.beginPath(); ctx.ellipse(14, 14, 11, 8, 0, 0, Math.PI*2); ctx.fill();
         ctx.strokeStyle = "rgb(20, 80, 30)"; ctx.lineWidth = 2; ctx.beginPath(); ctx.moveTo(6, 8); ctx.lineTo(20, 18); ctx.stroke();
-    } else if (idx === 8) { // 南瓜派
+    } else if (idx === 8) {
         ctx.fillStyle = "rgb(230, 126, 34)"; ctx.beginPath(); ctx.moveTo(6, 22); ctx.lineTo(22, 22); ctx.lineTo(14, 6); ctx.closePath(); ctx.fill();
         ctx.fillStyle = COLOR_WHITE; ctx.beginPath(); ctx.arc(14, 14, 3, 0, Math.PI*2); ctx.fill();
-    } else if (idx === 11) { // 飯糰
+    } else if (idx === 11) {
         ctx.fillStyle = COLOR_WHITE; ctx.beginPath(); ctx.moveTo(14, 4); ctx.lineTo(4, 22); ctx.lineTo(24, 22); ctx.closePath(); ctx.fill();
         ctx.fillStyle = "rgb(20, 20, 20)"; ctx.fillRect(10, 16, 8, 6);
-    } else if (idx === 19) { // 聖代
+    } else if (idx === 19) {
         ctx.fillStyle = "rgb(100, 200, 255)"; ctx.beginPath(); ctx.moveTo(8, 14); ctx.lineTo(20, 14); ctx.lineTo(14, 26); ctx.closePath(); ctx.fill();
         ctx.fillStyle = COLOR_WHITE; ctx.beginPath(); ctx.arc(14, 10, 6, 0, Math.PI*2); ctx.fill();
         ctx.fillStyle = COLOR_RED; ctx.beginPath(); ctx.arc(14, 5, 3, 0, Math.PI*2); ctx.fill();
@@ -265,10 +265,9 @@ function drawPixelPet(ctx, x, y, name, stage=1) {
     ctx.save();
     const size = 24 + (stage - 1) * 8;
     ctx.translate(x - size/2, y - size/2);
-    const idx = PETS_DB.findIndex(p => p.name === name);
+    const idx = Math.max(0, PETS_DB.findIndex(p => p.name === name));
     const cList = ["rgb(225, 155, 60)", "rgb(240, 240, 245)", "rgb(250, 180, 180)", COLOR_GREEN, "rgb(155, 89, 182)", "rgb(52, 152, 219)", "rgb(241, 196, 15)", "rgb(127, 140, 141)", "rgb(230, 126, 34)"];
     
-    // 基礎體態
     ctx.fillStyle = cList[idx % 9];
     ctx.beginPath(); ctx.ellipse(size/2, size/2, size/2 - 2, size/2 - 4, 0, 0, Math.PI*2); ctx.fill();
     ctx.fillStyle = COLOR_WHITE;
@@ -278,7 +277,6 @@ function drawPixelPet(ctx, x, y, name, stage=1) {
     ctx.beginPath(); ctx.arc(size/3, size/3, 1 + Math.floor(stage/2), 0, Math.PI*2); ctx.fill();
     ctx.beginPath(); ctx.arc(size*2/3, size/3, 1 + Math.floor(stage/2), 0, Math.PI*2); ctx.fill();
 
-    // 3 階段成長配件
     if (stage === 1) {
         ctx.fillStyle = "rgb(255, 200, 200)";
         ctx.beginPath(); ctx.arc(size/4, size/2, 2, 0, Math.PI*2); ctx.fill();
@@ -390,7 +388,7 @@ function drawPixelLobbyBuilding(ctx, bType, rect) {
 }
 
 // ==========================================
-// 4. 遊戲狀態與實體定義
+// 4. 遊戲物件實體定義
 // ==========================================
 class Player {
     constructor() {
@@ -497,23 +495,78 @@ let infoMsg = "歡迎來到大廳！靠近設施按 [E] 鍵互動。";
 let countdownTimer = 0;
 let shootCooldownTimer = 0;
 
-// 建築座標
+// 建築座標與碰撞區
 const rectDoor     = {x: 460, y: 70,  w: 100, h: 80,  type: "door",     label: "【 迷宮傳送門 】", color: COLOR_GOLD};
 const rectShop     = {x: 800, y: 90,  w: 120, h: 90,  type: "shop",     label: "【 補給商店 】", color: COLOR_RED};
 const rectPetHouse = {x: 800, y: 480, w: 120, h: 100, type: "pethouse", label: "【 寵物小屋 】", color: COLOR_PURPLE};
 const rectVocab    = {x: 100, y: 90,  w: 100, h: 100, type: "vocab",    label: "【 魔法單字庫 】", color: COLOR_BLUE};
 const rectChest    = {x: 100, y: 480, w: 100, h: 100, type: "chest",    label: "【 裝備軍火箱 】", color: COLOR_GREEN};
 
-// 虛擬控制器 (左側移動、右側射擊搖桿、E鍵、空白鍵、全螢幕)
+// 頂部三大操作按鈕 (與原版完全一致)
+const btnSave = { x: 20,  y: 20, w: 110, h: 36, text: "💾 存檔", color: COLOR_GREEN };
+const btnLoad = { x: 140, y: 20, w: 110, h: 36, text: "📂 讀檔", color: COLOR_PURPLE };
+const btnJob  = { x: 260, y: 20, w: 120, h: 36, text: "🔄 換職業", color: COLOR_BLUE };
+
+// 虛擬控制器
 const joyMove = { x: 120, y: SCREEN_HEIGHT - 120, radius: 75, stickX: 120, stickY: 120, dirX: 0, dirY: 0, touchId: null };
 const joyShoot = { x: SCREEN_WIDTH - 120, y: SCREEN_HEIGHT - 120, radius: 75, stickX: SCREEN_WIDTH - 120, stickY: SCREEN_HEIGHT - 120, dirX: 0, dirY: 0, isAiming: false, touchId: null };
 const btnE = { x: SCREEN_WIDTH - 60, y: SCREEN_HEIGHT - 230, radius: 36, text: "E", label: "互動", justPressed: false, touchId: null };
 const btnSpace = { x: SCREEN_WIDTH - 150, y: SCREEN_HEIGHT - 230, radius: 36, text: "SPACE", label: "出戰", justPressed: false, touchId: null };
-const btnFullscreen = { x: SCREEN_WIDTH - 140, y: 15, w: 125, h: 36, text: "⛶ 全螢幕" };
 const btnBack = { x: 850, y: 15, w: 150, h: 40, text: "⬅️ 放棄返回" };
 
 // ==========================================
-// 5. 多點觸控與全螢幕 API
+// 5. 存檔與讀檔系統 (LocalStorage 完整還原)
+// ==========================================
+function saveGame() {
+    const data = {
+        player: {
+            name: player.name, job: player.job, level: player.level, exp: player.exp, gold: player.gold,
+            hp: player.hp, max_hp: player.max_hp, shield: player.shield, max_shield: player.max_shield,
+            attack: player.attack, speed: player.speed, weapons: player.weapons,
+            equipped_weapon: player.equipped_weapon, current_floor: player.current_floor
+        },
+        favorite_ids: favoriteIds,
+        learned_ids: learnedIds,
+        pets: pets.map(p => ({name: p.name, exp: p.exp, stage: p.stage, req_exp: p.reqExp})),
+        active_pet_idx: activePetIdx,
+        foods: inventoryFoods
+    };
+    try {
+        localStorage.setItem("nihongo_hero_save", JSON.stringify(data));
+        infoMsg = "✨ 遊戲進度已成功存檔！";
+    } catch(e) {
+        infoMsg = "❌ 存檔失敗: " + e.message;
+    }
+}
+
+function loadGame() {
+    const raw = localStorage.getItem("nihongo_hero_save");
+    if (!raw) {
+        infoMsg = "❌ 未找到舊存檔！";
+        return;
+    }
+    try {
+        const data = JSON.parse(raw);
+        Object.assign(player, data.player);
+        player.x = SCREEN_WIDTH / 2; player.y = SCREEN_HEIGHT / 2;
+        favoriteIds = data.favorite_ids || [];
+        learnedIds = data.learned_ids || [];
+        pets.length = 0;
+        (data.pets || []).forEach(pd => {
+            const p = new Pet(pd.name);
+            p.exp = pd.exp; p.stage = pd.stage; p.reqExp = pd.req_exp || 50;
+            pets.push(p);
+        });
+        activePetIdx = data.active_pet_idx || 0;
+        inventoryFoods = data.foods || inventoryFoods;
+        infoMsg = "✨ 存檔讀取成功！";
+    } catch(e) {
+        infoMsg = "❌ 讀檔失敗: " + e.message;
+    }
+}
+
+// ==========================================
+// 6. 觸控與事件系統 (修復無反應與全螢幕阻斷)
 // ==========================================
 function getCanvasPos(e) {
     const rect = canvas.getBoundingClientRect();
@@ -522,7 +575,7 @@ function getCanvasPos(e) {
     return { x: (e.clientX - rect.left) * scaleX, y: (e.clientY - rect.top) * scaleY };
 }
 
-function requestFullscreen() {
+function tryFullscreen() {
     const docEl = document.documentElement;
     if (docEl.requestFullscreen) docEl.requestFullscreen().catch(()=>{});
     else if (docEl.webkitRequestFullscreen) docEl.webkitRequestFullscreen().catch(()=>{});
@@ -531,175 +584,191 @@ function requestFullscreen() {
     }
 }
 
-function handleTouch(e) {
-    e.preventDefault();
-    for (let i = 0; i < e.touches.length; i++) {
-        const touch = e.touches[i];
-        const pos = getCanvasPos(touch);
-
-        // 左側移動搖桿
-        const dMove = Math.hypot(pos.x - joyMove.x, pos.y - joyMove.y);
-        if (dMove < joyMove.radius * 1.8 && (joyMove.touchId === null || joyMove.touchId === touch.identifier)) {
-            joyMove.touchId = touch.identifier;
-            const angle = Math.atan2(pos.y - joyMove.y, pos.x - joyMove.x);
-            const dist = Math.min(dMove, joyMove.radius);
-            joyMove.stickX = joyMove.x + Math.cos(angle) * dist;
-            joyMove.stickY = joyMove.y + Math.sin(angle) * dist;
-            joyMove.dirX = Math.cos(angle) * (dist / joyMove.radius);
-            joyMove.dirY = Math.sin(angle) * (dist / joyMove.radius);
-            continue;
+function processPointer(pos, identifier, isDown) {
+    if (isDown) {
+        // 大廳三大按鈕
+        if (state === "LOBBY") {
+            if (pos.x >= btnSave.x && pos.x <= btnSave.x + btnSave.w && pos.y >= btnSave.y && pos.y <= btnSave.y + btnSave.h) { saveGame(); return; }
+            if (pos.x >= btnLoad.x && pos.x <= btnLoad.x + btnLoad.w && pos.y >= btnLoad.y && pos.y <= btnLoad.y + btnLoad.h) { loadGame(); return; }
+            if (pos.x >= btnJob.x && pos.x <= btnJob.x + btnJob.w && pos.y >= btnJob.y && pos.y <= btnJob.y + btnJob.h) {
+                const jobs = ["戰士", "法師", "弓箭手"];
+                player.job = jobs[(jobs.indexOf(player.job) + 1) % 3];
+                player.applyJobStats();
+                infoMsg = `職業切換為【${player.job}】！`;
+                return;
+            }
         }
 
-        // 右側拉動式射擊搖桿
-        const dShoot = Math.hypot(pos.x - joyShoot.x, pos.y - joyShoot.y);
-        if (dShoot < joyShoot.radius * 1.8 && (joyShoot.touchId === null || joyShoot.touchId === touch.identifier)) {
-            joyShoot.touchId = touch.identifier;
-            joyShoot.isAiming = true;
-            const angle = Math.atan2(pos.y - joyShoot.y, pos.x - joyShoot.x);
-            const dist = Math.min(dShoot, joyShoot.radius);
-            joyShoot.stickX = joyShoot.x + Math.cos(angle) * dist;
-            joyShoot.stickY = joyShoot.y + Math.sin(angle) * dist;
-            joyShoot.dirX = Math.cos(angle) * (dist / joyShoot.radius);
-            joyShoot.dirY = Math.sin(angle) * (dist / joyShoot.radius);
-            continue;
+        // 全域返回鈕
+        if (state !== "LOBBY" && state !== "QUIZ") {
+            if (pos.x >= btnBack.x && pos.x <= btnBack.x + btnBack.w && pos.y >= btnBack.y && pos.y <= btnBack.y + btnBack.h) {
+                state = "LOBBY";
+                return;
+            }
         }
 
         // E 按鈕
-        const dE = Math.hypot(pos.x - btnE.x, pos.y - btnE.y);
-        if (dE < btnE.radius && btnE.touchId === null) {
-            btnE.touchId = touch.identifier;
+        if (Math.hypot(pos.x - btnE.x, pos.y - btnE.y) < btnE.radius) {
             btnE.justPressed = true;
-            continue;
+            return;
         }
 
-        // 空白鍵按鈕
-        const dSpace = Math.hypot(pos.x - btnSpace.x, pos.y - btnSpace.y);
-        if (dSpace < btnSpace.radius && btnSpace.touchId === null) {
-            btnSpace.touchId = touch.identifier;
+        // SPACE 按鈕
+        if (Math.hypot(pos.x - btnSpace.x, pos.y - btnSpace.y) < btnSpace.radius) {
             btnSpace.justPressed = true;
-            continue;
+            return;
+        }
+
+        // 預習介面卡片點擊
+        if (state === "LEARN_STAGE") {
+            if (pos.x >= 680 && pos.x <= 840 && pos.y >= 15 && pos.y <= 55) { initDungeon(); return; }
+            stageWords.forEach((w, i) => {
+                const col = i % 4, row = Math.floor(i / 4);
+                const x = 30 + col * 240, y = 75 + row * 120;
+                if (pos.x >= x && pos.x <= x + 220 && pos.y >= y && pos.y <= y + 105) {
+                    if (favoriteIds.includes(w.id)) {
+                        favoriteIds = favoriteIds.filter(id => id !== w.id);
+                        infoMsg = `☆ 取消收藏【${w.jp}】`;
+                    } else {
+                        favoriteIds.push(w.id);
+                        infoMsg = `★ 已收藏【${w.jp}】！`;
+                    }
+                }
+            });
+            return;
+        }
+
+        // 寶箱問答選項
+        if (state === "QUIZ") {
+            quizOptions.forEach((opt, i) => {
+                const bx = 250 + (i % 2) * 270, by = 320 + Math.floor(i / 2) * 90;
+                if (pos.x >= bx && pos.x <= bx + 250 && pos.y >= by && pos.y <= by + 60) {
+                    if (opt === currentQuizChest.word.zh) {
+                        const g = Math.floor(Math.random() * 50) + 30;
+                        player.gold += g;
+                        currentQuizChest.opened = true;
+                        if (Math.random() < 0.45) {
+                            healthPacks.push({x: currentQuizChest.x, y: currentQuizChest.y});
+                            infoMsg = `✨ 答對了！獲得 💰 ${g} 金幣與 💖 回血包！`;
+                        } else {
+                            infoMsg = `✨ 答對了！開啟寶箱獲得 💰 ${g} 金幣！`;
+                        }
+                    } else {
+                        infoMsg = `❌ 答錯了！正確答案是『${currentQuizChest.word.zh}』。`;
+                    }
+                    state = "DUNGEON";
+                }
+            });
+            return;
+        }
+
+        // 商店點擊
+        if (state === "SHOP") {
+            FOODS_DB.forEach((f, i) => {
+                const bx = 30 + (i % 5) * 190, by = 105 + Math.floor(i / 5) * 45;
+                if (pos.x >= bx + 32 && pos.x <= bx + 177 && pos.y >= by && pos.y <= by + 38) {
+                    if (player.gold >= f.price) {
+                        player.gold -= f.price;
+                        inventoryFoods[f.name] = (inventoryFoods[f.name] || 0) + 1;
+                        infoMsg = `🛒 購買了【${f.name}】(庫存: ${inventoryFoods[f.name]})！`;
+                    } else infoMsg = `❌ 金幣不足 ${f.price} 金幣！`;
+                }
+            });
+            PETS_DB.forEach((p, i) => {
+                const bx = 30 + (i % 5) * 190, by = 345 + Math.floor(i / 5) * 45;
+                if (pos.x >= bx + 32 && pos.x <= bx + 177 && pos.y >= by && pos.y <= by + 38) {
+                    if (player.gold >= p.price) {
+                        player.gold -= p.price;
+                        pets.push(new Pet(p.name));
+                        infoMsg = `🛒 成功購買強力寵物【${p.name}】！`;
+                    } else infoMsg = `❌ 金幣不足 ${p.price} 金幣！`;
+                }
+            });
+            return;
+        }
+
+        // 背包換裝
+        if (state === "BACKPACK") {
+            player.weapons.forEach((wName, i) => {
+                const bx = 30 + (i % 4) * 230, by = 120 + Math.floor(i / 4) * 60;
+                if (pos.x >= bx + 32 && pos.x <= bx + 212 && pos.y >= by && pos.y <= by + 45) {
+                    player.equipped_weapon = wName;
+                    infoMsg = `⚔️ 已裝備【${wName}】！`;
+                }
+            });
+            return;
         }
     }
 }
 
-canvas.addEventListener("touchstart", (e) => {
-    handleTouch(e);
-    for (let i = 0; i < e.changedTouches.length; i++) {
-        handleClickAction(getCanvasPos(e.changedTouches[i]));
+// 綁定指標事件 (支援滑鼠與多點觸控)
+canvas.addEventListener("pointerdown", (e) => {
+    tryFullscreen();
+    const pos = getCanvasPos(e);
+
+    // 左側移動輪盤
+    const dMove = Math.hypot(pos.x - joyMove.x, pos.y - joyMove.y);
+    if (dMove < joyMove.radius * 1.8 && joyMove.touchId === null) {
+        joyMove.touchId = e.pointerId;
+        const angle = Math.atan2(pos.y - joyMove.y, pos.x - joyMove.x);
+        const dist = Math.min(dMove, joyMove.radius);
+        joyMove.stickX = joyMove.x + Math.cos(angle) * dist;
+        joyMove.stickY = joyMove.y + Math.sin(angle) * dist;
+        joyMove.dirX = Math.cos(angle) * (dist / joyMove.radius);
+        joyMove.dirY = Math.sin(angle) * (dist / joyMove.radius);
     }
-}, {passive: false});
 
-canvas.addEventListener("touchmove", handleTouch, {passive: false});
+    // 右側射擊輪盤
+    const dShoot = Math.hypot(pos.x - joyShoot.x, pos.y - joyShoot.y);
+    if (dShoot < joyShoot.radius * 1.8 && joyShoot.touchId === null && state === "DUNGEON") {
+        joyShoot.touchId = e.pointerId;
+        joyShoot.isAiming = true;
+        const angle = Math.atan2(pos.y - joyShoot.y, pos.x - joyShoot.x);
+        const dist = Math.min(dShoot, joyShoot.radius);
+        joyShoot.stickX = joyShoot.x + Math.cos(angle) * dist;
+        joyShoot.stickY = joyShoot.y + Math.sin(angle) * dist;
+        joyShoot.dirX = Math.cos(angle) * (dist / joyShoot.radius);
+        joyShoot.dirY = Math.sin(angle) * (dist / joyShoot.radius);
+    }
 
-canvas.addEventListener("touchend", (e) => {
-    e.preventDefault();
-    const currentIds = Array.from(e.touches).map(t => t.identifier);
-    if (!currentIds.includes(joyMove.touchId)) {
+    processPointer(pos, e.pointerId, true);
+});
+
+canvas.addEventListener("pointermove", (e) => {
+    const pos = getCanvasPos(e);
+    if (e.pointerId === joyMove.touchId) {
+        const dMove = Math.hypot(pos.x - joyMove.x, pos.y - joyMove.y);
+        const angle = Math.atan2(pos.y - joyMove.y, pos.x - joyMove.x);
+        const dist = Math.min(dMove, joyMove.radius);
+        joyMove.stickX = joyMove.x + Math.cos(angle) * dist;
+        joyMove.stickY = joyMove.y + Math.sin(angle) * dist;
+        joyMove.dirX = Math.cos(angle) * (dist / joyMove.radius);
+        joyMove.dirY = Math.sin(angle) * (dist / joyMove.radius);
+    }
+    if (e.pointerId === joyShoot.touchId && state === "DUNGEON") {
+        const dShoot = Math.hypot(pos.x - joyShoot.x, pos.y - joyShoot.y);
+        const angle = Math.atan2(pos.y - joyShoot.y, pos.x - joyShoot.x);
+        const dist = Math.min(dShoot, joyShoot.radius);
+        joyShoot.stickX = joyShoot.x + Math.cos(angle) * dist;
+        joyShoot.stickY = joyShoot.y + Math.sin(angle) * dist;
+        joyShoot.dirX = Math.cos(angle) * (dist / joyShoot.radius);
+        joyShoot.dirY = Math.sin(angle) * (dist / joyShoot.radius);
+    }
+});
+
+canvas.addEventListener("pointerup", (e) => {
+    if (e.pointerId === joyMove.touchId) {
         joyMove.touchId = null; joyMove.stickX = joyMove.x; joyMove.stickY = joyMove.y;
         joyMove.dirX = 0; joyMove.dirY = 0;
     }
-    if (!currentIds.includes(joyShoot.touchId)) {
+    if (e.pointerId === joyShoot.touchId) {
         joyShoot.touchId = null; joyShoot.stickX = joyShoot.x; joyShoot.stickY = joyShoot.y;
         joyShoot.dirX = 0; joyShoot.dirY = 0; joyShoot.isAiming = false;
     }
-    if (!currentIds.includes(btnE.touchId)) btnE.touchId = null;
-    if (!currentIds.includes(btnSpace.touchId)) btnSpace.touchId = null;
-}, {passive: false});
-
-canvas.addEventListener("mousedown", (e) => {
-    const pos = getCanvasPos(e);
-    handleClickAction(pos);
 });
 
-function handleClickAction(pos) {
-    requestFullscreen();
-
-    // 全螢幕按鈕
-    if (pos.x >= btnFullscreen.x && pos.x <= btnFullscreen.x + btnFullscreen.w && pos.y >= btnFullscreen.y && pos.y <= btnFullscreen.y + btnFullscreen.h) {
-        requestFullscreen();
-        return;
-    }
-
-    // 全域返回鈕
-    if (state !== "LOBBY" && state !== "QUIZ") {
-        if (pos.x >= btnBack.x && pos.x <= btnBack.x + btnBack.w && pos.y >= btnBack.y && pos.y <= btnBack.y + btnBack.h) {
-            state = "LOBBY";
-            return;
-        }
-    }
-
-    if (state === "LEARN_STAGE") {
-        if (pos.x >= 680 && pos.x <= 840 && pos.y >= 15 && pos.y <= 55) {
-            initDungeon();
-            return;
-        }
-        stageWords.forEach((w, i) => {
-            const col = i % 4, row = Math.floor(i / 4);
-            const x = 30 + col * 240, y = 75 + row * 120;
-            if (pos.x >= x && pos.x <= x + 220 && pos.y >= y && pos.y <= y + 105) {
-                if (favoriteIds.includes(w.id)) {
-                    favoriteIds = favoriteIds.filter(id => id !== w.id);
-                    infoMsg = `☆ 取消收藏【${w.jp}】`;
-                } else {
-                    favoriteIds.push(w.id);
-                    infoMsg = `★ 已收藏【${w.jp}】！`;
-                }
-            }
-        });
-    } else if (state === "QUIZ") {
-        quizOptions.forEach((opt, i) => {
-            const bx = 250 + (i % 2) * 270, by = 320 + Math.floor(i / 2) * 90;
-            if (pos.x >= bx && pos.x <= bx + 250 && pos.y >= by && pos.y <= by + 60) {
-                if (opt === currentQuizChest.word.zh) {
-                    const g = Math.floor(Math.random() * 50) + 30;
-                    player.gold += g;
-                    currentQuizChest.opened = true;
-                    if (Math.random() < 0.45) {
-                        healthPacks.push({x: currentQuizChest.x, y: currentQuizChest.y});
-                        infoMsg = `✨ 答對了！獲得 💰 ${g} 金幣與 💖 回血包！`;
-                    } else {
-                        infoMsg = `✨ 答對了！開啟寶箱獲得 💰 ${g} 金幣！`;
-                    }
-                } else {
-                    infoMsg = `❌ 答錯了！正確答案是『${currentQuizChest.word.zh}』。`;
-                }
-                state = "DUNGEON";
-            }
-        });
-    } else if (state === "SHOP") {
-        FOODS_DB.forEach((f, i) => {
-            const bx = 30 + (i % 5) * 190, by = 105 + Math.floor(i / 5) * 45;
-            if (pos.x >= bx + 32 && pos.x <= bx + 177 && pos.y >= by && pos.y <= by + 38) {
-                if (player.gold >= f.price) {
-                    player.gold -= f.price;
-                    inventoryFoods[f.name] = (inventoryFoods[f.name] || 0) + 1;
-                    infoMsg = `🛒 購買了【${f.name}】(庫存: ${inventoryFoods[f.name]})！`;
-                } else infoMsg = `❌ 金幣不足 ${f.price} 金幣！`;
-            }
-        });
-        PETS_DB.forEach((p, i) => {
-            const bx = 30 + (i % 5) * 190, by = 345 + Math.floor(i / 5) * 45;
-            if (pos.x >= bx + 32 && pos.x <= bx + 177 && pos.y >= by && pos.y <= by + 38) {
-                if (player.gold >= p.price) {
-                    player.gold -= p.price;
-                    pets.push(new Pet(p.name));
-                    infoMsg = `🛒 成功購買強力寵物【${p.name}】！`;
-                } else infoMsg = `❌ 金幣不足 ${p.price} 金幣！`;
-            }
-        });
-    } else if (state === "BACKPACK") {
-        player.weapons.forEach((wName, i) => {
-            const bx = 30 + (i % 4) * 230, by = 120 + Math.floor(i / 4) * 60;
-            if (pos.x >= bx + 32 && pos.x <= bx + 212 && pos.y >= by && pos.y <= by + 45) {
-                player.equipped_weapon = wName;
-                infoMsg = `⚔️ 已裝備【${wName}】！`;
-            }
-        });
-    }
-}
-
 // ==========================================
-// 6. 核心遊戲流程
+// 7. 核心遊戲流程
 // ==========================================
 function prepareStage() {
     const unlearned = ALL_VOCABULARY.filter(w => !learnedIds.includes(w.id));
@@ -760,10 +829,9 @@ function spawnWave(wNum) {
 }
 
 // ==========================================
-// 7. 主邏輯循環
+// 8. 主更新邏輯
 // ==========================================
 function update() {
-    // 玩家位移
     player.x += joyMove.dirX * player.speed;
     player.y += joyMove.dirY * player.speed;
     const boundW = (state === "DUNGEON") ? WORLD_WIDTH : SCREEN_WIDTH;
@@ -837,10 +905,10 @@ function update() {
             }
         }
 
-        // 拉動式右側射擊搖桿（持續發射機制）
+        // 拉動式右側射擊搖桿
         if (joyShoot.isAiming) {
             shootCooldownTimer++;
-            if (shootCooldownTimer >= 10) { // 每 10 幀（約 0.16 秒）發射一發
+            if (shootCooldownTimer >= 10) {
                 shootCooldownTimer = 0;
                 bullets.push({
                     x: player.x, y: player.y,
@@ -914,7 +982,7 @@ function update() {
             }
         }
 
-        // 怪物推進
+        // 怪物移動與攻擊
         stageMonsters.forEach(m => {
             const angle = Math.atan2(player.y - m.y, player.x - m.x);
             m.x += Math.cos(angle) * m.speed; m.y += Math.sin(angle) * m.speed;
@@ -974,7 +1042,7 @@ function update() {
 }
 
 // ==========================================
-// 8. 完整繪圖渲染
+// 9. 完整繪圖渲染
 // ==========================================
 function draw() {
     ctx.clearRect(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT);
@@ -1003,10 +1071,33 @@ function draw() {
         const pet = pets[activePetIdx];
         if (pet) drawPixelPet(ctx, pet.x, pet.y, pet.name, pet.stage);
 
-        // 頂部資訊列
+        // 靠近設施懸浮提示 (完全復刻原版)
+        let promptTxt = null;
+        if (Math.hypot(player.x - (rectDoor.x + 50), player.y - (rectDoor.y + 40)) < 75) promptTxt = "按 [E] 進入迷宮";
+        else if (Math.hypot(player.x - (rectShop.x + 60), player.y - (rectShop.y + 45)) < 80) promptTxt = "按 [E] 進入商店";
+        else if (Math.hypot(player.x - (rectPetHouse.x + 60), player.y - (rectPetHouse.y + 50)) < 80) promptTxt = "按 [E] 進入寵物小屋";
+        else if (Math.hypot(player.x - (rectVocab.x + 50), player.y - (rectVocab.y + 50)) < 75) promptTxt = "按 [E] 查看單字庫";
+        else if (Math.hypot(player.x - (rectChest.x + 50), player.y - (rectChest.y + 50)) < 75) promptTxt = "按 [E] 開啟裝備背包";
+
+        if (promptTxt) {
+            ctx.fillStyle = "rgba(0, 0, 0, 0.75)";
+            ctx.roundRect(player.x - 75, player.y - 45, 150, 30, 6); ctx.fill();
+            ctx.fillStyle = COLOR_GOLD; ctx.font = "14px sans-serif";
+            ctx.fillText(promptTxt, player.x - 60, player.y - 25);
+        }
+
+        // 大廳三大功能按鈕 (存檔/讀檔/換職業)
+        [btnSave, btnLoad, btnJob].forEach(b => {
+            ctx.fillStyle = b.color; ctx.roundRect(b.x, b.y, b.w, b.h, 6); ctx.fill();
+            ctx.strokeStyle = COLOR_WHITE; ctx.lineWidth = 1; ctx.stroke();
+            ctx.fillStyle = COLOR_WHITE; ctx.font = "bold 16px sans-serif";
+            ctx.fillText(b.text, b.x + 16, b.y + 24);
+        });
+
+        // 頂部狀態列
         ctx.fillStyle = COLOR_WHITE; ctx.font = "18px sans-serif";
         const petStr = pet ? `出戰: ${pet.name}(Lv.${pet.stage})` : "無出戰寵物";
-        ctx.fillText(`【${player.name}】Lv.${player.level} ${player.job} | ${petStr} | 💰 ${player.gold}`, 400, 32);
+        ctx.fillText(`【${player.name}】Lv.${player.level} ${player.job} | ${petStr} | 💰 ${player.gold}`, 400, 44);
         ctx.fillStyle = COLOR_GOLD; ctx.font = "18px sans-serif";
         ctx.fillText(infoMsg, 50, SCREEN_HEIGHT - 35);
 
@@ -1201,14 +1292,8 @@ function draw() {
         }
     }
 
-    // 全螢幕按鈕
-    ctx.fillStyle = "rgba(40, 50, 70, 0.7)"; ctx.roundRect(btnFullscreen.x, btnFullscreen.y, btnFullscreen.w, btnFullscreen.h, 6); ctx.fill();
-    ctx.strokeStyle = COLOR_GOLD; ctx.lineWidth = 1; ctx.stroke();
-    ctx.fillStyle = COLOR_WHITE; ctx.font = "bold 14px sans-serif"; ctx.fillText(btnFullscreen.text, btnFullscreen.x + 20, btnFullscreen.y + 23);
-
-    // 繪製虛擬按鈕與輪盤
+    // 繪製虛擬控制器 (左側移動、右側射擊輪盤、E、SPACE)
     if (["LOBBY", "DUNGEON", "PET_HOUSE"].includes(state)) {
-        // 左側移動搖桿
         ctx.strokeStyle = "rgba(255, 255, 255, 0.35)"; ctx.lineWidth = 3;
         ctx.beginPath(); ctx.arc(joyMove.x, joyMove.y, joyMove.radius, 0, Math.PI*2); ctx.stroke();
         ctx.fillStyle = "rgba(255, 255, 255, 0.65)";
@@ -1216,7 +1301,6 @@ function draw() {
         ctx.fillStyle = COLOR_WHITE; ctx.font = "bold 12px sans-serif"; ctx.fillText("移動", joyMove.x - 12, joyMove.y + 4);
 
         if (state === "DUNGEON") {
-            // 右側拉動式射擊搖桿
             ctx.strokeStyle = "rgba(255, 204, 0, 0.45)"; ctx.lineWidth = 3;
             ctx.beginPath(); ctx.arc(joyShoot.x, joyShoot.y, joyShoot.radius, 0, Math.PI*2); ctx.stroke();
             ctx.fillStyle = joyShoot.isAiming ? "rgba(231, 76, 60, 0.8)" : "rgba(255, 204, 0, 0.65)";
@@ -1225,13 +1309,11 @@ function draw() {
         }
 
         if (state === "LOBBY" || state === "PET_HOUSE") {
-            // E 鍵
             ctx.fillStyle = COLOR_GOLD; ctx.beginPath(); ctx.arc(btnE.x, btnE.y, btnE.radius, 0, Math.PI*2); ctx.fill();
             ctx.strokeStyle = COLOR_WHITE; ctx.lineWidth = 2; ctx.stroke();
             ctx.fillStyle = COLOR_BG_DARK; ctx.font = "bold 18px sans-serif"; ctx.fillText(btnE.text, btnE.x - 7, btnE.y + 6);
             ctx.fillStyle = COLOR_WHITE; ctx.font = "bold 12px sans-serif"; ctx.fillText(btnE.label, btnE.x - 12, btnE.y + 24);
 
-            // 空白鍵
             ctx.fillStyle = COLOR_PURPLE; ctx.beginPath(); ctx.arc(btnSpace.x, btnSpace.y, btnSpace.radius, 0, Math.PI*2); ctx.fill();
             ctx.strokeStyle = COLOR_WHITE; ctx.lineWidth = 2; ctx.stroke();
             ctx.fillStyle = COLOR_WHITE; ctx.font = "bold 12px sans-serif"; ctx.fillText(btnSpace.text, btnSpace.x - 18, btnSpace.y + 4);
@@ -1240,7 +1322,7 @@ function draw() {
 }
 
 // ==========================================
-// 9. 主循環啟動
+// 10. 主循環啟動
 // ==========================================
 function gameLoop() {
     update();
